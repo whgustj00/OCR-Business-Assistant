@@ -1,0 +1,37 @@
+/* App.css */
+.App {
+  text-align: center;
+  font-family: Arial, sans-serif;
+  margin: 20px;
+}
+
+.file-upload-container {
+  margin: 20px auto;
+  max-width: 600px;
+}
+
+h1 {
+  color: #333;
+}
+
+input[type="file"] {
+  margin: 20px 0;
+  padding: 10px;
+}
+
+.output {
+  margin-top: 20px;
+  text-align: left; /* 왼쪽 정렬 */
+}
+
+h2 {
+  color: #333;
+}
+
+pre {
+  background-color: #f8f8f8;
+  padding: 10px;
+  border-radius: 5px;
+  white-space: pre-wrap; /* 줄 바꿈 처리 */
+  overflow-x: auto; /* 수평 스크롤 처리 */
+}
