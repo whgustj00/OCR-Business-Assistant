@@ -1,62 +1,110 @@
-/* App.css */
 .App {
   text-align: center;
   font-family: Arial, sans-serif;
-  margin: 20px;
 }
 
 .file-upload-container {
   margin: 20px auto;
-  max-width: 80%;
-  display: flex; /* 플렉스 박스 레이아웃 사용 */
-  flex-direction: column; /* 세로 방향으로 배치 */
+  max-width: 90%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
+
+.output-container {
+  display: flex;
+  justify-content: space-between; /* 양쪽 끝으로 분포 */
+  width: 100%; /* 전체 너비 사용 */
+  margin-top: 20px;
+}
+
 .file-preview {
-  flex-grow: 1; /* 이미지 미리보기가 남은 공간을 차지하도록 설정 */
-  position: relative; /* 화살표 버튼을 위해 상대 위치 지정 */
+  flex: 1; /* 같은 너비를 갖도록 설정 */
+  position: relative; /* 화살표 버튼을 위한 상대 위치 지정 */
+  margin-right: 5px; /* 오른쪽 여백 추가 */
+  border: 1px solid #ccc; /* 테두리 추가 */
+  border-radius: 5px; /* 모서리 둥글게 처리 */
+  padding: 10px; /* 내부 여백 추가 */
+  min-width: 0; /* 최소 너비를 0으로 설정하여 균형 유지 */
 }
-h1 {
-  color: #333;
+
+.ocr-output {
+  flex: 1; /* 같은 너비를 갖도록 설정 */
+  margin-left: 5px; /* 왼쪽 여백 추가 */
+  border: 1px solid #ccc; /* 테두리 추가 */
+  border-radius: 5px; /* 모서리 둥글게 처리 */
+  padding: 10px; /* 내부 여백 추가 */
+  min-width: 0; /* 최소 너비를 0으로 설정하여 균형 유지 */
+}
+
+.preview-image {
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+}
+
+.arrow-container {
+  position: absolute; /* 화살표를 미리보기 안에 배치 */
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  justify-content: space-between; /* 화살표 사이 공간 균등 분배 */
+  width: 95%;
+}
+
+.output {
+  margin-top: 10px;
+  text-align: left;
+  overflow: auto;
+  max-width: 100%;
+}
+
+.arrow-button {
+  background: rgba(133, 133, 133, 0.1);
+  border: none;
+  padding: 8px;
+  cursor: pointer;
+  z-index: 1;
+  border-radius: 5px;
+  transition: background 0.3s;
+}
+
+.arrow-button:hover {
+  background: rgba(133, 133, 133, 0.3);
+}
+
+.left-arrow {
+  margin-right: auto; /* 왼쪽 버튼을 왼쪽 끝으로 */
+}
+
+.right-arrow {
+  margin-left: auto; /* 오른쪽 버튼을 오른쪽 끝으로 */
 }
 
 input[type="file"] {
   padding: 10px;
 }
 
-.output {
-  margin-top: 20px;
-  text-align: left; /* 왼쪽 정렬 */
-  overflow: auto; /* 결과 출력 부분에서 스크롤 처리 */
-}
-
 pre {
   background-color: #f8f8f8;
   padding: 10px;
   border-radius: 5px;
-  white-space: pre-wrap; /* 줄 바꿈 처리 */
-  overflow-x: auto; /* 수평 스크롤 처리 */
+  white-space: pre-wrap;
+  overflow-x: auto;
+  max-height: 500px;
 }
 
-.arrow-button {
-  position: absolute;
-  transform: translateY(-50%);
-  background: rgba(255, 255, 255, 0.7); /* 반투명 배경 */
-  border: none;
-  padding: 10px;
-  cursor: pointer;
-  z-index: 1;
-  border-radius: 5px;
-  transition: background 0.3s; /* 배경 전환 효과 */
+.navbar {
+  background-color: #f0f0f0; /* 배경색 설정 */
+  padding: 10px; /* 내부 여백 추가 */
+  text-align: center; /* 중앙 정렬 */
+  border-bottom: 1px solid #ccc; /* 하단 테두리 추가 */
 }
 
-.arrow-button:hover {
-  background: rgba(255, 255, 255, 1); /* 호버 시 불투명 */
-}
-
-.left-arrow {
-  left: 10px; /* 왼쪽 버튼 위치 */
-}
-
-.right-arrow {
-  right: 10px; /* 오른쪽 버튼 위치 */
+.navbar-title {
+  margin: 0; /* 기본 여백 제거 */
+  font-size: 24px; /* 제목 크기 설정 */
+  color: #333; /* 글자 색상 설정 */
 }

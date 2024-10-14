@@ -27,7 +27,6 @@ const FileUpload = () => {
       setImageUrls([URL.createObjectURL(selectedFile)]); // 이미지 미리보기 설정
     }
 
-    // 페이지 범위 초기화
     setPageRange("");
   };
 
@@ -41,7 +40,7 @@ const FileUpload = () => {
 
   const handleTextExtraction = async () => {
     if (!file) {
-      alert("먼저 파일을 업로드 해주세요."); // 파일이 없을 경우 경고 메시지
+      alert("먼저 파일을 업로드 해주세요.");
       return;
     }
 
@@ -76,7 +75,6 @@ const FileUpload = () => {
     }
   };
 
-  // PDF 파일을 모든 페이지를 이미지로 변환하는 함수
   const convertPdfToImages = async (file) => {
     const fileReader = new FileReader();
     const imageUrls = [];
@@ -84,11 +82,11 @@ const FileUpload = () => {
     return new Promise((resolve, reject) => {
       fileReader.onload = async () => {
         const typedArray = new Uint8Array(fileReader.result);
-        const pdf = await getDocument(typedArray).promise; // PDF 문서 가져오기
-        const numPages = pdf.numPages; // 총 페이지 수
+        const pdf = await getDocument(typedArray).promise;
+        const numPages = pdf.numPages;
 
         for (let i = 1; i <= numPages; i++) {
-          const page = await pdf.getPage(i); // 각 페이지를 가져옴
+          const page = await pdf.getPage(i);
           const viewport = page.getViewport({ scale: 1 });
           const canvas = document.createElement("canvas");
           const context = canvas.getContext("2d");
@@ -121,7 +119,6 @@ const FileUpload = () => {
 
   return (
     <div className="file-upload-container">
-      <h1>OCR 비즈니스 어시스턴트</h1>
       <input
         type="file"
         accept="image/*,application/pdf"
@@ -131,63 +128,52 @@ const FileUpload = () => {
         type="text"
         placeholder="페이지 범위 (예: 1-3)"
         value={pageRange}
-        onChange={(e) => setPageRange(e.target.value)} // 페이지 범위 입력 처리
-        disabled={file && file.type !== "application/pdf"} // PDF가 아닐 경우 비활성화
+        onChange={(e) => setPageRange(e.target.value)}
+        disabled={file && file.type !== "application/pdf"}
       />
       <br />
       <button onClick={handleTextExtraction} disabled={isProcessing}>
         텍스트 추출
       </button>
-      <div style={{ display: "flex", marginTop: "20px", alignItems: "center" }}>
-        {imageUrls.length > 0 && (
-          <div style={{ position: "relative", flexGrow: 1 }}>
-            <img
-              src={imageUrls[currentPage]}
-              alt={`Page ${currentPage + 1}`}
-              style={{ maxWidth: "100%", maxHeight: "100%" }} // 최대 높이 제한
-            />
-            <button
-              onClick={handlePreviousPage}
-              disabled={currentPage === 0}
-              className="arrow-button left-arrow"
-              style={{ left: "10px", top: "50%" }} // 화살표 위치 조정
-            >
-              ◀
-            </button>
-            <button
-              onClick={handleNextPage}
-              disabled={currentPage === imageUrls.length - 1}
-              className="arrow-button right-arrow"
-              style={{ right: "10px", top: "50%" }} // 화살표 위치 조정
-            >
-              ▶
-            </button>
-            <p
-              style={{
-                position: "absolute",
-                bottom: "10px",
-                left: "50%",
-                transform: "translateX(-50%)",
-              }}
-            >
-              페이지 {currentPage + 1} / {imageUrls.length}
-            </p>{" "}
-            {/* 현재 페이지 표시 */}
-          </div>
-        )}
-        <div style={{ flexGrow: 1 }}>
+      <div className="output-container">
+        <div className="file-preview">
+          {imageUrls.length > 0 && (
+            <>
+              <img
+                src={imageUrls[currentPage]}
+                alt={`Page ${currentPage + 1}`}
+                className="preview-image"
+              />
+              <div className="arrow-container">
+                <button
+                  onClick={handlePreviousPage}
+                  disabled={currentPage === 0}
+                  className="arrow-button left-arrow"
+                >
+                  ◀
+                </button>
+                <button
+                  onClick={handleNextPage}
+                  disabled={currentPage === imageUrls.length - 1}
+                  className="arrow-button right-arrow"
+                >
+                  ▶
+                </button>
+              </div>
+            </>
+          )}
+          <p>
+            페이지 {currentPage + 1} / {imageUrls.length}
+          </p>
+        </div>
+        <div className="ocr-output">
           <h2>OCR 및 요약 결과</h2>
           {isProcessing ? (
-            <p>처리 중...</p> // 처리 중 메시지
+            <p>처리 중...</p>
           ) : (
             <div
               dangerouslySetInnerHTML={{ __html: htmlOutput }}
               className="output"
-              style={{
-                border: "1px solid #ccc",
-                padding: "10px",
-                borderRadius: "5px",
-              }}
             />
           )}
         </div>
@@ -198,8 +184,13 @@ const FileUpload = () => {
 
 function App() {
   return (
-    <div className="App">
-      <FileUpload />
+    <div>
+      <nav className="navbar">
+        <h1 className="navbar-title">OCR 비즈니스 어시스턴트</h1>
+      </nav>
+      <div className="App">
+        <FileUpload />
+      </div>
     </div>
   );
 }

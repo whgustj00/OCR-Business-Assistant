@@ -89,11 +89,13 @@ def upload_file():
                     if page_number < len(images):  # 페이지 번호 유효성 검사
                         img = images[page_number]
                         img = preprocess_image(img)  # 이미지 전처리
-                        ocr_text += perform_ocr(img) + "\n"  # OCR 수행
+                        ocr_text += f"=== 페이지 {page_number + 1} ===\n"  # 페이지 번호 추가
+                        ocr_text += perform_ocr(img) + "\n\n\n"  # OCR 수행 후 결과 구분
             else:
-                for img in images:
+                for i, img in enumerate(images):
                     img = preprocess_image(img)  # 이미지 전처리
-                    ocr_text += perform_ocr(img) + "\n"  # OCR 수행
+                    ocr_text += f"\n=== 페이지 {i + 1} ===\n"  # 페이지 번호 추가
+                    ocr_text += perform_ocr(img) + "\n\n\n"  # OCR 수행 후 결과 구분
         else:
             # JPG, PNG 파일 처리
             img = Image.open(file)
