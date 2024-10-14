@@ -8,24 +8,25 @@
 .file-upload-container {
   margin: 20px auto;
   max-width: 80%;
+  display: flex; /* 플렉스 박스 레이아웃 사용 */
+  flex-direction: column; /* 세로 방향으로 배치 */
 }
-
+.file-preview {
+  flex-grow: 1; /* 이미지 미리보기가 남은 공간을 차지하도록 설정 */
+  position: relative; /* 화살표 버튼을 위해 상대 위치 지정 */
+}
 h1 {
   color: #333;
 }
 
 input[type="file"] {
-  margin: 20px 0;
   padding: 10px;
 }
 
 .output {
   margin-top: 20px;
   text-align: left; /* 왼쪽 정렬 */
-}
-
-h2 {
-  color: #333;
+  overflow: auto; /* 결과 출력 부분에서 스크롤 처리 */
 }
 
 pre {
@@ -34,4 +35,28 @@ pre {
   border-radius: 5px;
   white-space: pre-wrap; /* 줄 바꿈 처리 */
   overflow-x: auto; /* 수평 스크롤 처리 */
+}
+
+.arrow-button {
+  position: absolute;
+  transform: translateY(-50%);
+  background: rgba(255, 255, 255, 0.7); /* 반투명 배경 */
+  border: none;
+  padding: 10px;
+  cursor: pointer;
+  z-index: 1;
+  border-radius: 5px;
+  transition: background 0.3s; /* 배경 전환 효과 */
+}
+
+.arrow-button:hover {
+  background: rgba(255, 255, 255, 1); /* 호버 시 불투명 */
+}
+
+.left-arrow {
+  left: 10px; /* 왼쪽 버튼 위치 */
+}
+
+.right-arrow {
+  right: 10px; /* 오른쪽 버튼 위치 */
 }

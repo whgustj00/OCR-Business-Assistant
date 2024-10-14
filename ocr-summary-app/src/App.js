@@ -4,25 +4,27 @@ import { getDocument } from "pdfjs-dist/webpack"; // PDF.js 가져오기
 
 const FileUpload = () => {
   const [htmlOutput, setHtmlOutput] = useState("");
-  const [imageUrl, setImageUrl] = useState(""); // 이미지 미리보기를 위한 상태
+  const [imageUrls, setImageUrls] = useState([]); // 이미지 미리보기를 위한 상태
   const [isProcessing, setIsProcessing] = useState(false); // 처리 중 상태
   const [pageRange, setPageRange] = useState(""); // 페이지 범위 상태 추가
   const [file, setFile] = useState(null); // 선택된 파일 상태 추가
+  const [currentPage, setCurrentPage] = useState(0); // 현재 페이지 상태 추가
 
   const handleFileUpload = (event) => {
     const selectedFile = event.target.files[0];
     if (!selectedFile) return;
 
     setFile(selectedFile); // 파일 상태 업데이트
-    setImageUrl(""); // 새로운 파일 선택 시 이미지 미리보기 초기화
+    setImageUrls([]); // 새로운 파일 선택 시 이미지 미리보기 초기화
+    setCurrentPage(0); // 페이지 초기화
 
     // PDF 파일인 경우 처리
     if (selectedFile.type === "application/pdf") {
-      convertPdfToImage(selectedFile).then((pdfImageUrl) => {
-        setImageUrl(pdfImageUrl);
+      convertPdfToImages(selectedFile).then((pdfImageUrls) => {
+        setImageUrls(pdfImageUrls);
       });
     } else {
-      setImageUrl(URL.createObjectURL(selectedFile)); // 이미지 미리보기 설정
+      setImageUrls([URL.createObjectURL(selectedFile)]); // 이미지 미리보기 설정
     }
 
     // 페이지 범위 초기화
@@ -74,27 +76,47 @@ const FileUpload = () => {
     }
   };
 
-  // PDF 파일을 이미지로 변환하는 함수
-  const convertPdfToImage = async (file) => {
+  // PDF 파일을 모든 페이지를 이미지로 변환하는 함수
+  const convertPdfToImages = async (file) => {
     const fileReader = new FileReader();
+    const imageUrls = [];
+
     return new Promise((resolve, reject) => {
       fileReader.onload = async () => {
         const typedArray = new Uint8Array(fileReader.result);
         const pdf = await getDocument(typedArray).promise; // PDF 문서 가져오기
-        const page = await pdf.getPage(1); // 첫 페이지를 가져옴
-        const viewport = page.getViewport({ scale: 1 });
-        const canvas = document.createElement("canvas");
-        const context = canvas.getContext("2d");
-        canvas.height = viewport.height;
-        canvas.width = viewport.width;
+        const numPages = pdf.numPages; // 총 페이지 수
 
-        await page.render({ canvasContext: context, viewport: viewport })
-          .promise;
-        resolve(canvas.toDataURL());
+        for (let i = 1; i <= numPages; i++) {
+          const page = await pdf.getPage(i); // 각 페이지를 가져옴
+          const viewport = page.getViewport({ scale: 1 });
+          const canvas = document.createElement("canvas");
+          const context = canvas.getContext("2d");
+          canvas.height = viewport.height;
+          canvas.width = viewport.width;
+
+          await page.render({ canvasContext: context, viewport: viewport })
+            .promise;
+          imageUrls.push(canvas.toDataURL());
+        }
+
+        resolve(imageUrls);
       };
       fileReader.onerror = (error) => reject(error);
       fileReader.readAsArrayBuffer(file);
     });
+  };
+
+  const handleNextPage = () => {
+    if (currentPage < imageUrls.length - 1) {
+      setCurrentPage(currentPage + 1); // 다음 페이지로 이동
+    }
+  };
+
+  const handlePreviousPage = () => {
+    if (currentPage > 0) {
+      setCurrentPage(currentPage - 1); // 이전 페이지로 이동
+    }
   };
 
   return (
@@ -116,15 +138,41 @@ const FileUpload = () => {
       <button onClick={handleTextExtraction} disabled={isProcessing}>
         텍스트 추출
       </button>
-      <div style={{ display: "flex", marginTop: "20px" }}>
-        {imageUrl && (
-          <div style={{ marginRight: "20px" }}>
-            <h2>업로드된 이미지</h2>
+      <div style={{ display: "flex", marginTop: "20px", alignItems: "center" }}>
+        {imageUrls.length > 0 && (
+          <div style={{ position: "relative", flexGrow: 1 }}>
             <img
-              src={imageUrl}
-              alt="Uploaded"
-              style={{ maxWidth: "100%", maxHeight: "100%" }}
+              src={imageUrls[currentPage]}
+              alt={`Page ${currentPage + 1}`}
+              style={{ maxWidth: "100%", maxHeight: "100%" }} // 최대 높이 제한
             />
+            <button
+              onClick={handlePreviousPage}
+              disabled={currentPage === 0}
+              className="arrow-button left-arrow"
+              style={{ left: "10px", top: "50%" }} // 화살표 위치 조정
+            >
+              ◀
+            </button>
+            <button
+              onClick={handleNextPage}
+              disabled={currentPage === imageUrls.length - 1}
+              className="arrow-button right-arrow"
+              style={{ right: "10px", top: "50%" }} // 화살표 위치 조정
+            >
+              ▶
+            </button>
+            <p
+              style={{
+                position: "absolute",
+                bottom: "10px",
+                left: "50%",
+                transform: "translateX(-50%)",
+              }}
+            >
+              페이지 {currentPage + 1} / {imageUrls.length}
+            </p>{" "}
+            {/* 현재 페이지 표시 */}
           </div>
         )}
         <div style={{ flexGrow: 1 }}>
