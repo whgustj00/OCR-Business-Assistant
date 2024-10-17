@@ -22,7 +22,6 @@ headers = {
 
 def preprocess_image(image):
     """이미지 전처리 함수: 대비 조정 및 해상도 향상"""
-    """이미지 전처리 함수: 대비 조정 및 해상도 향상"""
     # 흑백 변환
     image = image.convert("L")  # 그레이스케일로 변환
 
