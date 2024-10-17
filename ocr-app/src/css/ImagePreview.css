@@ -1,0 +1,58 @@
+.file-preview {
+  flex: 1; /* 같은 너비를 갖도록 설정 */
+  position: relative; /* 화살표 버튼을 위한 상대 위치 지정 */
+  margin-right: 5px; /* 오른쪽 여백 추가 */
+  border: 1px solid #ccc; /* 테두리 추가 */
+  border-radius: 5px; /* 모서리 둥글게 처리 */
+  padding: 10px; /* 내부 여백 추가 */
+  min-width: 0; /* 최소 너비를 0으로 설정하여 균형 유지 */
+  overflow: hidden; /* 넘치는 내용 숨기기 */
+}
+
+.preview-image {
+  max-width: 100%; /* 부모 요소에 맞게 최대 너비 조정 */
+  max-height: 100%; /* 최대 높이를 설정하여 크기 제한 */
+  width: auto;
+  height: auto;
+}
+.arrow-container {
+  position: absolute; /* 화살표를 미리보기 안에 배치 */
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  justify-content: space-between; /* 화살표 사이 공간 균등 분배 */
+  width: 95%;
+}
+.arrow-button {
+  background: rgba(133, 133, 133, 0.1);
+  border: none;
+  padding: 8px;
+  cursor: pointer;
+  z-index: 1;
+  border-radius: 5px;
+  transition: background 0.3s;
+}
+.left-arrow {
+  margin-right: auto; /* 왼쪽 버튼을 왼쪽 끝으로 */
+}
+
+.right-arrow {
+  margin-left: auto; /* 오른쪽 버튼을 오른쪽 끝으로 */
+}
+
+.arrow-button:hover {
+  background: rgba(133, 133, 133, 0.3);
+}
+
+.zoom-controls {
+  position: absolute; /* 절대 위치 설정 */
+  top: 10px; /* 상단 여백 */
+  left: 10px; /* 좌측 여백 */
+  z-index: 10; /* 다른 요소 위에 표시되도록 설정 */
+}
+
+.zoom-controls button {
+  font-size: 20px; /* 버튼 크기 */
+  margin: 0 5px; /* 버튼 간격 */
+}

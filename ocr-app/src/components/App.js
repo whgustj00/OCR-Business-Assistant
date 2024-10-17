@@ -1,34 +1,19 @@
+// src/components/App.js
 import React, { useState } from "react";
-import "./App.css"; // CSS 파일을 추가하세요.
 import { getDocument } from "pdfjs-dist/webpack"; // PDF.js 가져오기
+import FileUpload from "./FileUpload";
+import ImagePreview from "./ImagePreview";
+import OcrOutput from "./OcrOutput";
+import "../css/App.css"; // CSS 파일을 추가하세요.
 
-const FileUpload = () => {
+function App() {
   const [htmlOutput, setHtmlOutput] = useState("");
   const [imageUrls, setImageUrls] = useState([]); // 이미지 미리보기를 위한 상태
   const [isProcessing, setIsProcessing] = useState(false); // 처리 중 상태
   const [pageRange, setPageRange] = useState(""); // 페이지 범위 상태 추가
   const [file, setFile] = useState(null); // 선택된 파일 상태 추가
   const [currentPage, setCurrentPage] = useState(0); // 현재 페이지 상태 추가
-
-  const handleFileUpload = (event) => {
-    const selectedFile = event.target.files[0];
-    if (!selectedFile) return;
-
-    setFile(selectedFile); // 파일 상태 업데이트
-    setImageUrls([]); // 새로운 파일 선택 시 이미지 미리보기 초기화
-    setCurrentPage(0); // 페이지 초기화
-
-    // PDF 파일인 경우 처리
-    if (selectedFile.type === "application/pdf") {
-      convertPdfToImages(selectedFile).then((pdfImageUrls) => {
-        setImageUrls(pdfImageUrls);
-      });
-    } else {
-      setImageUrls([URL.createObjectURL(selectedFile)]); // 이미지 미리보기 설정
-    }
-
-    setPageRange("");
-  };
+  const [scale, setScale] = useState(1); // 스케일 상태 추가
 
   const validatePageRange = (range) => {
     const regex = /^\d+-\d+$/; // "X-Y" 형식인지 확인
@@ -75,6 +60,22 @@ const FileUpload = () => {
     }
   };
 
+  const handleFileUpload = async (selectedFile) => {
+    setFile(selectedFile); // 선택된 파일 상태 업데이트
+    setImageUrls([]); // 새로운 파일 선택 시 이미지 미리보기 초기화
+    setCurrentPage(0); // 페이지 초기화
+
+    // PDF 파일인 경우 처리
+    if (selectedFile.type === "application/pdf") {
+      const pdfImageUrls = await convertPdfToImages(selectedFile);
+      setImageUrls(pdfImageUrls);
+    } else {
+      setImageUrls([URL.createObjectURL(selectedFile)]); // 이미지 미리보기 설정
+    }
+
+    setPageRange("");
+  };
+
   const convertPdfToImages = async (file) => {
     const fileReader = new FileReader();
     const imageUrls = [];
@@ -105,91 +106,34 @@ const FileUpload = () => {
     });
   };
 
-  const handleNextPage = () => {
-    if (currentPage < imageUrls.length - 1) {
-      setCurrentPage(currentPage + 1); // 다음 페이지로 이동
-    }
-  };
-
-  const handlePreviousPage = () => {
-    if (currentPage > 0) {
-      setCurrentPage(currentPage - 1); // 이전 페이지로 이동
-    }
-  };
-
-  return (
-    <div className="file-upload-container">
-      <input
-        type="file"
-        accept="image/*,application/pdf"
-        onChange={handleFileUpload}
-      />
-      <input
-        type="text"
-        placeholder="페이지 범위 (예: 1-3)"
-        value={pageRange}
-        onChange={(e) => setPageRange(e.target.value)}
-        disabled={file && file.type !== "application/pdf"}
-      />
-      <br />
-      <button onClick={handleTextExtraction} disabled={isProcessing}>
-        텍스트 추출
-      </button>
-      <div className="output-container">
-        <div className="file-preview">
-          {imageUrls.length > 0 && (
-            <>
-              <img
-                src={imageUrls[currentPage]}
-                alt={`Page ${currentPage + 1}`}
-                className="preview-image"
-              />
-              <div className="arrow-container">
-                <button
-                  onClick={handlePreviousPage}
-                  disabled={currentPage === 0}
-                  className="arrow-button left-arrow"
-                >
-                  ◀
-                </button>
-                <button
-                  onClick={handleNextPage}
-                  disabled={currentPage === imageUrls.length - 1}
-                  className="arrow-button right-arrow"
-                >
-                  ▶
-                </button>
-              </div>
-            </>
-          )}
-          <p>
-            페이지 {currentPage + 1} / {imageUrls.length}
-          </p>
-        </div>
-        <div className="ocr-output">
-          <h2>OCR 및 요약 결과</h2>
-          {isProcessing ? (
-            <p>처리 중...</p>
-          ) : (
-            <div
-              dangerouslySetInnerHTML={{ __html: htmlOutput }}
-              className="output"
-            />
-          )}
-        </div>
-      </div>
-    </div>
-  );
-};
-
-function App() {
   return (
     <div>
       <nav className="navbar">
         <h1 className="navbar-title">OCR 비즈니스 어시스턴트</h1>
       </nav>
       <div className="App">
-        <FileUpload />
+        <FileUpload onFileUpload={handleFileUpload} />
+        <input
+          type="text"
+          placeholder="페이지 범위 (예: 1-3)"
+          value={pageRange}
+          onChange={(e) => setPageRange(e.target.value)}
+          disabled={file && file.type !== "application/pdf"} // PDF가 아닐 경우 비활성화
+        />
+        <br />
+        <button onClick={handleTextExtraction} disabled={isProcessing}>
+          텍스트 추출
+        </button>
+        <div className="output-container">
+          <ImagePreview
+            imageUrls={imageUrls}
+            currentPage={currentPage}
+            setCurrentPage={setCurrentPage}
+            scale={scale}
+            setScale={setScale}
+          />
+          <OcrOutput isProcessing={isProcessing} htmlOutput={htmlOutput} />
+        </div>
       </div>
     </div>
   );

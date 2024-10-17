@@ -1,0 +1,7 @@
+.file-upload-container {
+  margin: 20px auto;
+  max-width: 90%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
