@@ -4,6 +4,7 @@ import { getDocument } from "pdfjs-dist/webpack"; // PDF.js 가져오기
 import FileUpload from "./FileUpload";
 import ImagePreview from "./ImagePreview";
 import OcrOutput from "./OcrOutput";
+import { useNavigate } from "react-router-dom"; // 페이지 이동을 위한 hook
 import "../css/App.css"; // CSS 파일을 추가하세요.
 
 function App() {
@@ -14,6 +15,19 @@ function App() {
   const [file, setFile] = useState(null); // 선택된 파일 상태 추가
   const [currentPage, setCurrentPage] = useState(0); // 현재 페이지 상태 추가
   const [scale, setScale] = useState(1); // 스케일 상태 추가
+  const [searchTerm, setSearchTerm] = useState("");
+  const navigate = useNavigate(); // 페이지 이동을 위한 함수
+
+  // 검색 요청 처리
+  const handleSearch = async () => {
+    if (!searchTerm) {
+      alert("검색어를 입력하세요.");
+      return;
+    }
+
+    // 검색어를 쿼리 파라미터로 새로운 페이지로 이동
+    navigate(`/search?query=${encodeURIComponent(searchTerm)}`);
+  };
 
   const validatePageRange = (range) => {
     const regex = /^\d+-\d+$/; // "X-Y" 형식인지 확인
@@ -112,6 +126,13 @@ function App() {
         <h1 className="navbar-title">OCR 비즈니스 어시스턴트</h1>
       </nav>
       <div className="App">
+        <input
+          type="text"
+          placeholder="문서 검색"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
+        <button onClick={handleSearch}>검색</button>
         <FileUpload onFileUpload={handleFileUpload} />
         <input
           type="text"
