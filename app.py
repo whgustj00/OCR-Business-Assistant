@@ -9,6 +9,7 @@ from dotenv import load_dotenv
 import os
 from pymongo import MongoClient
 from datetime import datetime
+import gridfs
 
 load_dotenv()  # 환경 변수 로드
 
@@ -26,12 +27,16 @@ headers = {
 MONGO_URI = os.getenv("MONGODB_URL")
 client = MongoClient(MONGO_URI)
 db = client['OCR_DB']  # 데이터베이스 이름
-uploads_collection = db['uploads']  # 업로드 파일 컬렉션
-structured_data_collection = db['structured_data']  # 정형화된 데이터 컬렉션
-
+data_collection = db['data']  # 정형화된 데이터 컬렉션
+fs = gridfs.GridFS(db)  # GridFS 객체 생성
 
 def preprocess_image(image):
     """이미지 전처리 함수: 대비 조정 및 해상도 향상"""
+
+    # 이미지 모드 변환
+    if image.mode == 'RGBA':
+        image = image.convert('RGB')  # RGBA를 RGB로 변환
+
     # 흑백 변환
     image = image.convert("L")  # 그레이스케일로 변환
 
@@ -70,7 +75,7 @@ def perform_ocr(image):
                     "content": [
                         {
                             "type": "text",
-                            "text": "다음 이미지에서 텍스트 그대로 추출 그 외 내용은 출력 금지"
+                            "text": "이 이미지에서 문서 포맷에 맞게 텍스트를 추출해서 요약하지 말고 OCR 수행해줘. 그 외 내용은 출력 금지."
                         },
                         {
                             "type": "image_url",
@@ -104,7 +109,7 @@ def summarize_text(text):
             "messages": [
                 {
                     "role": "user",
-                    "content": f"다음 텍스트를 200토큰 안에 요약해줘:\n\n{text}"
+                    "content": f"다음 텍스트의 중요 내용을 200토큰 안에 요약해줘:\n\n{text}"
                 }
             ],
             "max_tokens": 200
@@ -166,22 +171,29 @@ def parse_page_range(range_str):
             pages.append(int(r) - 1)  # 단일 페이지도 0으로 맞추기
     return pages
 
-def process_image(image):
-    """이미지를 Base64로 인코딩하고 전처리하는 함수"""
-    # 이미지 모드 변환
+def save_image_to_gridfs(image):
+    """이미지를 GridFS에 저장하고 ID를 반환하는 함수"""
+    buffered = io.BytesIO()
+
+    # 이미지 모드가 RGBA일 경우 RGB로 변환
     if image.mode == 'RGBA':
         image = image.convert('RGB')  # RGBA를 RGB로 변환
 
-    # 이미지를 Base64로 인코딩하여 저장
-    buffered = io.BytesIO()
-    image.save(buffered, format="JPEG")
-    image_data = base64.b64encode(buffered.getvalue()).decode('utf-8')
+    image.save(buffered, format="JPEG")  # 이미지를 JPEG 포맷으로 저장
+    image_id = fs.put(buffered.getvalue(), filename="uploaded_image.jpg")  # GridFS에 저장
+    return image_id
 
-    # 이미지 전처리
-    image = preprocess_image(image)
-
-    return image, image_data
-
+def parse_formatted_data(formatted_data_str):
+    """정형화된 데이터 문자열을 사전으로 변환하는 함수"""
+    formatted_data = {}
+    lines = formatted_data_str.strip().split('\n')
+    
+    for line in lines:
+        if ':' in line:
+            key, value = line.split(':', 1)  # ':' 기준으로 분리
+            formatted_data[key.strip()] = value.strip()  # 키와 값을 저장
+            
+    return formatted_data
 
 @app.route('/upload', methods=['POST'])
 def upload_file():
@@ -199,7 +211,6 @@ def upload_file():
         pages_to_process = parse_page_range(page_range) if page_range else None  # 페이지 범위 파싱
 
         ocr_text = ""
-        image_data = None  # 이미지를 저장할 변수
 
         if file.content_type == 'application/pdf':
             # PDF 파일을 이미지로 변환
@@ -210,54 +221,57 @@ def upload_file():
                     if page_number < len(images):  # 페이지 번호 유효성 검사
                         img = images[page_number]
 
-                        # 이미지 처리 및 Base64 인코딩
-                        img, image_data = process_image(img)
+                        # GridFS에 이미지 저장 (전처리 전에)
+                        image_id = save_image_to_gridfs(img)
+
+                        # 이미지 처리
+                        img = preprocess_image(img)
 
                         ocr_text += f"=== 페이지 {page_number + 1} ===\n\n"  # 페이지 번호 추가
                         ocr_text += perform_ocr(img) + "\n\n\n"  # OCR 수행 후 결과 구분
             else:
                 for i, img in enumerate(images):
-                    # 이미지 처리 및 Base64 인코딩
-                    img, image_data = process_image(img)
+                    # GridFS에 이미지 저장 (전처리 전에)
+                    image_id = save_image_to_gridfs(img)
+                    
+                    # 이미지 처리
+                    img = preprocess_image(img)
 
                     ocr_text += f"=== 페이지 {i + 1} ===\n\n"  # 페이지 번호 추가
                     ocr_text += perform_ocr(img) + "\n\n\n"  # OCR 수행 후 결과 구분
         else:
             # JPG, PNG 파일 처리
             img = Image.open(file)
+
+            # GridFS에 이미지 저장 (전처리 전에)
+            image_id = save_image_to_gridfs(img)
             
-            # 이미지 처리 및 Base64 인코딩
-            img, image_data = process_image(img)
+            # 이미지 처리
+            img = preprocess_image(img)
 
             ocr_text = perform_ocr(img)  # OCR 수행
             # ocr_text = "123"
-
-        # MongoDB에 업로드된 파일 정보 저장
-        result = uploads_collection.insert_one({
-            "filename": file.filename,
-            "upload_date": datetime.now(),
-            "ocr_text": ocr_text,
-            "image_data": image_data  # Base64로 인코딩된 이미지 데이터 추가
-        })
-        print(f"Uploaded file data ID: {result.inserted_id}")  # 추가된 코드
 
         # 텍스트 요약
         summary = summarize_text(ocr_text)
 
         # 데이터 정형화
-        formatted_data = format_data(ocr_text)
+        formatted_data_str = format_data(ocr_text)
+        formatted_data = parse_formatted_data(formatted_data_str)  # 문자열을 사전으로 변환
 
         # summary = "요약 데이터"
         # formatted_data = "정형화 데이터"
 
-        # 정형화된 데이터 MongoDB에 저장
-        structured_data_result = structured_data_collection.insert_one({
+        # MongoDB에 저장
+        data_result = data_collection.insert_one({
+            "filename": file.filename,
+            "upload_date": datetime.now(),
             "ocr_text": ocr_text,
             "summary": summary,
             "formatted_data": formatted_data,
-            "upload_date": datetime.now()
+            "image_id": image_id  # GridFS 이미지 ID 추가
         })
-        print(f"Structured data ID: {structured_data_result.inserted_id}")  # 추가된 코드
+        print(f"data ID: {data_result.inserted_id}")  # 추가된 코드
 
         # HTML 레이아웃으로 텍스트 구성
         response_html = f"""
@@ -267,7 +281,7 @@ def upload_file():
             <h2>요약 결과</h2>
             <pre>{summary}</pre>
             <h2>정형화된 데이터</h2>
-            <pre>{formatted_data}</pre>
+            <pre>{formatted_data_str}</pre>
         </div>
         """
 
@@ -276,48 +290,45 @@ def upload_file():
     except Exception as e:
         print(f"Error: {str(e)}")
         return jsonify({"error": str(e)}), 500
-
-@app.route("/search", methods=["GET"])
-def search_documents():
-    query = request.args.get("query")
     
+@app.route('/search', methods=['GET'])
+def search():
+    query = request.args.get('query', '')  # 요청에서 검색 쿼리 가져오기
+
     if not query:
-        return jsonify({"error": "검색어를 입력해야 합니다."}), 400
+        return jsonify({"error": "검색어가 필요합니다."}), 400
 
-    # MongoDB에서 모든 정형화된 데이터 검색
-    structured_data_list = list(structured_data_collection.find())
-    
-    # 결과를 저장할 리스트
-    results = []
-    for data in structured_data_list:
-        # 정형화된 데이터에서 텍스트와 요약을 가져옵니다.
-        ocr_text = data.get("ocr_text", "")
-        summary = data.get("summary", "")
-        image_data_id = data.get("image_data")  # 이미지 데이터 ID 가져오기
+    try:
+        # MongoDB에서 검색 수행
+        results = data_collection.find({
+            "$or": [
+                {"filename": {"$regex": query, "$options": "i"}},
+                {"ocr_text": {"$regex": query, "$options": "i"}},
+                {"summary": {"$regex": query, "$options": "i"}},
+                {"formatted_data": {"$regex": query, "$options": "i"}},
+            ]
+        })
 
-        # 쿼리가 OCR 텍스트 또는 요약에 포함되어 있는지 확인
-        if query.lower() in ocr_text.lower() or query.lower() in summary.lower():
-            # 이미지 데이터 검색
-            image_data = uploads_collection.find_one({"_id": image_data_id})  # 이미지 데이터 가져오기
-            
-            image_link = None
-            if image_data:
-                image_filename = image_data.get("filename")  # filename 필드 가져오기
-                image_link = f"/uploads/{image_filename}" if image_filename else None
+        search_results = []
+        for result in results:
+            # GridFS에서 이미지 가져오기
+            image_data = fs.get(result['image_id']).read()  # GridFS에서 이미지 읽기
+            image_base64 = base64.b64encode(image_data).decode('utf-8')  # Base64 인코딩
+            image_url = f"data:image/jpeg;base64,{image_base64}"  # 이미지 URL 생성
 
-            results.append({
-                "title": f"Document {data['_id']}",
-                "summary": summary,
-                "downloadLink": f"/path/to/download/{data['_id']}",  # 적절한 다운로드 링크로 수정
-                "previewLink": f"/path/to/preview/{data['_id']}",   # 적절한 미리보기 링크로 수정
-                "imageLink": image_link  # 이미지 링크 추가
+            # 결과에 요약, 날짜, 이미지 URL 추가
+            search_results.append({
+                "filename" : result['filename'],
+                "summary": result['summary'],
+                "upload_date": result['upload_date'].strftime("%Y-%m-%d %H:%M:%S"),  # 날짜 형식 변환
+                "image_url": image_url
             })
 
-    if not results:
-        return jsonify({"message": "검색 결과가 없습니다."}), 404
+        return jsonify({"results": search_results})
 
-    return jsonify({"results": results})
-
+    except Exception as e:
+        print(f"Error: {str(e)}")
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
     app.run(debug=True)

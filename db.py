@@ -12,7 +12,7 @@ MONGO_URI = os.getenv("MONGODB_URL")  # 환경 변수에서 MongoDB URI 가져�
 client = MongoClient(MONGO_URI)
 db = client['OCR_DB']  # 데이터베이스 이름
 uploads_collection = db['uploads']  # 업로드 파일 컬렉션
-structured_data_collection = db['structured_data']  # 정형화된 데이터 컬렉션
+data_collection = db['data']  # 정형화된 데이터 컬렉션
 
 # GridFS 인스턴스 생성
 fs = gridfs.GridFS(db)

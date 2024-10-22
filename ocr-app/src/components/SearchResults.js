@@ -1,4 +1,3 @@
-// src/components/SearchResults.js
 import React, { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 
@@ -49,30 +48,20 @@ function SearchResults() {
 
   return (
     <div>
-      <h2>검색 결과: {query}</h2>
+      <h2>검색 결과 : {query}</h2>
       <div className="search-results">
         {searchResults.length > 0 ? (
           searchResults.map((result, index) => (
-            <div key={index} className="search-result-item">
-              <h3>{result.title}</h3>
-              <p>{result.summary}</p>
-              {/* 미리보기 이미지 추가 */}
-              {result.imageLink && (
-                <img
-                  src={result.imageLink}
-                  alt="미리보기"
-                  style={{ width: "300px", height: "auto" }} // 이미지 스타일 설정
-                />
-              )}
-              <button
-                onClick={() => window.open(result.downloadLink, "_blank")}
-              >
-                다운로드
-              </button>
-              <button onClick={() => window.open(result.previewLink, "_blank")}>
-                미리보기
-              </button>
-            </div>
+            <fieldset key={index} className="search-result-item">
+              <h3>{result.filename}</h3>
+              <p>업로드 날짜 : {result.upload_date}</p>
+              <p width="200px">{result.summary}</p>
+              <img
+                src={result.image_url} // 이미지를 가져오는 URL
+                alt="미리보기"
+                style={{ width: "300px", height: "auto" }} // 이미지 스타일 설정
+              />
+            </fieldset>
           ))
         ) : (
           <div>검색 결과가 없습니다.</div>
