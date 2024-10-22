@@ -10,5 +10,5 @@ React 라이브러리 설치
 cd ocr-summary-app
 npm install
 
-프론트엔드 구동 npm start
+프론트엔드 구동 npm start<br>
 새 터미널 열고 백엔드 구동 flask run
