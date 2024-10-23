@@ -1,22 +1,29 @@
 // src/components/App.js
 import React, { useState } from "react";
-import { getDocument } from "pdfjs-dist/webpack"; // PDF.js 가져오기
+import { getDocument } from "pdfjs-dist/webpack";
 import FileUpload from "./FileUpload";
 import ImagePreview from "./ImagePreview";
 import OcrOutput from "./OcrOutput";
-import { useNavigate } from "react-router-dom"; // 페이지 이동을 위한 hook
-import "../css/App.css"; // CSS 파일을 추가하세요.
+import { useNavigate } from "react-router-dom";
+import "../css/App.css";
 
 function App() {
   const [htmlOutput, setHtmlOutput] = useState("");
-  const [imageUrls, setImageUrls] = useState([]); // 이미지 미리보기를 위한 상태
-  const [isProcessing, setIsProcessing] = useState(false); // 처리 중 상태
-  const [pageRange, setPageRange] = useState(""); // 페이지 범위 상태 추가
-  const [file, setFile] = useState(null); // 선택된 파일 상태 추가
-  const [currentPage, setCurrentPage] = useState(0); // 현재 페이지 상태 추가
-  const [scale, setScale] = useState(1); // 스케일 상태 추가
+  const [imageUrls, setImageUrls] = useState([]);
+  const [isOcrProcessing, setIsOcrProcessing] = useState(false);
+  const [isSummaryProcessing, setIsSummaryProcessing] = useState(false);
+  const [pageRange, setPageRange] = useState("");
+  const [file, setFile] = useState(null);
+  const [currentPage, setCurrentPage] = useState(0);
+  const [scale, setScale] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
-  const navigate = useNavigate(); // 페이지 이동을 위한 함수
+  const [summaryHtml, setSummaryHtml] = useState("");
+  const [formattedData, setFormattedData] = useState({});
+  const [fileName, setFileName] = useState("");
+  const [summary, setSummary] = useState("");
+  const [uploadId, setUploadId] = useState("");
+
+  const navigate = useNavigate();
 
   // 검색 요청 처리
   const handleSearch = async () => {
@@ -24,19 +31,18 @@ function App() {
       alert("검색어를 입력하세요.");
       return;
     }
-
-    // 검색어를 쿼리 파라미터로 새로운 페이지로 이동
     navigate(`/search?query=${encodeURIComponent(searchTerm)}`);
   };
 
   const validatePageRange = (range) => {
-    const regex = /^\d+-\d+$/; // "X-Y" 형식인지 확인
+    const regex = /^\d+-\d+$/;
     if (!regex.test(range)) return false;
 
     const [start, end] = range.split("-").map(Number);
-    return start <= end && start > 0; // 시작 페이지가 종료 페이지보다 작고 0보다 커야 함
+    return start <= end && start > 0;
   };
 
+  // 텍스트 추출
   const handleTextExtraction = async () => {
     if (!file) {
       alert("먼저 파일을 업로드 해주세요.");
@@ -50,44 +56,88 @@ function App() {
 
     const formData = new FormData();
     formData.append("file", file);
-    formData.append("pageRange", pageRange); // 페이지 범위 추가
+    formData.append("pageRange", pageRange);
 
     try {
-      setIsProcessing(true); // 처리 시작
-
-      const response = await fetch("http://127.0.0.1:5000/upload", {
+      setIsOcrProcessing(true);
+      const response = await fetch("http://127.0.0.1:5000/extract_text", {
         method: "POST",
         body: formData,
       });
       const data = await response.json();
 
       if (response.ok) {
-        setHtmlOutput(data.html); // HTML로 출력
+        setHtmlOutput(data.html); // HTML 레이아웃으로 저장
+        setFileName(file.name); // 파일 이름 저장
+        setUploadId(data.upload_id); // 백엔드에서 받은 upload_id 저장
       } else {
-        alert(`파일 업로드 중 오류가 발생했습니다: ${data.error}`);
+        alert(`텍스트 추출 중 오류가 발생했습니다: ${data.error}`);
       }
     } catch (error) {
       console.error("Error:", error);
-      alert("파일 업로드 중 오류가 발생했습니다.");
+      alert("텍스트 추출 중 오류가 발생했습니다.");
     } finally {
-      setIsProcessing(false); // 처리 종료
+      setIsOcrProcessing(false);
     }
   };
 
-  const handleFileUpload = async (selectedFile) => {
-    setFile(selectedFile); // 선택된 파일 상태 업데이트
-    setImageUrls([]); // 새로운 파일 선택 시 이미지 미리보기 초기화
-    setCurrentPage(0); // 페이지 초기화
+  // 요약 및 정형화
+  const handleSummarizeAndFormat = async () => {
+    if (!htmlOutput) {
+      alert("먼저 텍스트 추출을 수행하세요.");
+      return;
+    }
 
-    // PDF 파일인 경우 처리
+    try {
+      setIsSummaryProcessing(true); // 요약 처리 시작
+      const response = await fetch(
+        "http://127.0.0.1:5000/summarize_and_format",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            ocr_text: htmlOutput,
+            filename: fileName,
+            upload_id: uploadId, // upload_id 전송
+          }),
+        }
+      );
+      const data = await response.json();
+
+      if (response.ok) {
+        setSummaryHtml(data.html); // 요약 HTML 저장
+        setFormattedData(data.formatted_data); // 정형화된 데이터 저장
+        setSummary(data.summary); // 요약 저장
+      } else {
+        alert(`요약 및 정형화 중 오류가 발생했습니다: ${data.error}`);
+      }
+    } catch (error) {
+      console.error("Error:", error);
+      alert("요약 및 정형화 중 오류가 발생했습니다.");
+    } finally {
+      setIsSummaryProcessing(false);
+    }
+  };
+
+  // 파일 업로드 핸들러
+  const handleFileUpload = async (selectedFile) => {
+    setHtmlOutput("");
+    setImageUrls([]);
+    setCurrentPage(0);
+    setSummaryHtml("");
+    setFormattedData({});
+    setSummary("");
+    setPageRange("");
+    setFile(selectedFile);
+    setIsOcrProcessing(false);
+    setIsSummaryProcessing(false);
+
     if (selectedFile.type === "application/pdf") {
       const pdfImageUrls = await convertPdfToImages(selectedFile);
       setImageUrls(pdfImageUrls);
     } else {
-      setImageUrls([URL.createObjectURL(selectedFile)]); // 이미지 미리보기 설정
+      setImageUrls([URL.createObjectURL(selectedFile)]);
     }
-
-    setPageRange("");
   };
 
   const convertPdfToImages = async (file) => {
@@ -139,12 +189,22 @@ function App() {
           placeholder="페이지 범위 (예: 1-3)"
           value={pageRange}
           onChange={(e) => setPageRange(e.target.value)}
-          disabled={file && file.type !== "application/pdf"} // PDF가 아닐 경우 비활성화
+          disabled={file && file.type !== "application/pdf"}
         />
         <br />
-        <button onClick={handleTextExtraction} disabled={isProcessing}>
+        <button onClick={handleTextExtraction} disabled={isOcrProcessing}>
           텍스트 추출
         </button>
+
+        {htmlOutput && (
+          <button
+            onClick={handleSummarizeAndFormat}
+            disabled={isSummaryProcessing}
+          >
+            요약 및 정형화
+          </button>
+        )}
+
         <div className="output-container">
           <ImagePreview
             imageUrls={imageUrls}
@@ -153,7 +213,12 @@ function App() {
             scale={scale}
             setScale={setScale}
           />
-          <OcrOutput isProcessing={isProcessing} htmlOutput={htmlOutput} />
+          <OcrOutput
+            isOcrProcessing={isOcrProcessing}
+            htmlOutput={htmlOutput}
+            isSummaryProcessing={isSummaryProcessing}
+            summaryHtml={summaryHtml}
+          />
         </div>
       </div>
     </div>
