@@ -75,7 +75,7 @@ def perform_ocr(image):
                     "content": [
                         {
                             "type": "text",
-                            "text": "이 이미지에서 문서 포맷에 맞게 텍스트를 추출해서 요약하지 말고 OCR 수행해줘. 그 외 내용은 출력 금지."
+                            "text": "이 이미지에서 문서 포맷에 맞게 텍스트를 추출해서 OCR 수행해줘. 그 외 내용은 출력 금지."
                         },
                         {
                             "type": "image_url",
