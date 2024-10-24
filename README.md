@@ -7,7 +7,7 @@ Python 라이브러리 설치<br/>
 pip install -r requirements.txt
 
 React 라이브러리 설치<br/>
-cd ocr-summary-app<br/>
+cd ocr-app<br/>
 npm install
 
 프론트엔드 구동 npm start<br/>
