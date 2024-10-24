@@ -7,10 +7,10 @@ def preprocess_image(image):
 
     # 2. 대비 증가
     enhancer = ImageEnhance.Contrast(image)
-    image = enhancer.enhance(1.2)  # 대비 증가 (값 조정 가능)
+    image = enhancer.enhance(1.5)  # 대비 증가 (값 조정 가능)
 
-    # 4. 이진화
-    # threshold = 100  # 이진화 임계값 조정
+    # # 4. 이진화
+    # threshold = 128  # 이진화 임계값 조정
     # image = image.point(lambda p: 255 if p > threshold else 0)
 
     # 5. 해상도 향상
@@ -18,13 +18,13 @@ def preprocess_image(image):
 
     # 6. 선명도 향상
     enhancer = ImageEnhance.Sharpness(image)
-    image = enhancer.enhance(1.5)  # 선명도 증가 (값 조정 가능)
+    image = enhancer.enhance(0)  # 선명도 증가 (값 조정 가능)
     return image
 
 if __name__ == "__main__":
     # 이미지 테스트
     input_image_path = "media/감사보고서.png"  # 입력 이미지 경로
-    output_image_path = "processed image/output_image.png"  # 출력 이미지 경로
+    output_image_path = "processed image_test/output_image.png"  # 출력 이미지 경로
 
     # 이미지 열기
     try:
