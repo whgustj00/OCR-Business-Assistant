@@ -4,7 +4,7 @@ import gridfs
 from dotenv import load_dotenv
 from PIL import Image
 from io import BytesIO
-
+# 나 안길찬이다
 load_dotenv()
 
 # MongoDB Atlas 연결 문자열
