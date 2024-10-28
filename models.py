@@ -8,6 +8,7 @@ import fitz
 import io
 from PIL import Image, ImageEnhance
 import base64
+import Levenshtein
 
 load_dotenv()  # 환경 변수 로드
 
@@ -223,3 +224,15 @@ def save_db_data(upload_id, filename, ocr_text, summary, formatted_data, upload_
     except Exception as e:
         print(f"Error in save_db_data: {str(e)}")
         return None
+    
+def calculate_accuracy(original_text, ocr_text):
+    if not original_text or not ocr_text:
+        return 0.0
+
+    # Levenshtein distance 계산
+    distance = Levenshtein.distance(original_text, ocr_text)
+    max_len = max(len(original_text), len(ocr_text))
+
+    # 정확도 계산
+    accuracy = (1 - distance / max_len) * 100  # 비율을 퍼센트로 변환
+    return accuracy

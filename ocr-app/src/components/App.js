@@ -181,6 +181,11 @@ function App() {
           placeholder="문서 검색"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              handleSearch(); // 엔터 키를 누르면 검색 실행
+            }
+          }}
         />
         <button onClick={handleSearch}>검색</button>
         <FileUpload onFileUpload={handleFileUpload} />
@@ -216,6 +221,7 @@ function App() {
           <OcrOutput
             isOcrProcessing={isOcrProcessing}
             htmlOutput={htmlOutput}
+            setHtmlOutput={setHtmlOutput} // 추가된 부분
             isSummaryProcessing={isSummaryProcessing}
             summaryHtml={summaryHtml}
           />

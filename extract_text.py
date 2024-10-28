@@ -56,15 +56,7 @@ def extract_text_route():
         # 업로드 정보를 DB에 저장
         upload_id = save_db_upload(file.filename, ocr_text, image_id)
 
-        # HTML 레이아웃으로 텍스트 구성
-        response_html = f"""
-        <div>
-            <h2>OCR 결과</h2>
-            <pre>{ocr_text}</pre>
-        </div>
-        """
-
-        return jsonify({"html": response_html, "upload_id": upload_id})
+        return jsonify({"html": ocr_text, "upload_id": upload_id})
 
     except Exception as e:
         print(f"Error in extract_text: {str(e)}")

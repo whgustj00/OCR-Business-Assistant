@@ -1,10 +1,11 @@
 // src/components/OcrOutput.js
 import React from "react";
-import "../css/OcrOutput.css"; // CSS 파일 임포트
+import "../css/OcrOutput.css";
 
 const OcrOutput = ({
   isOcrProcessing,
   htmlOutput,
+  setHtmlOutput,
   isSummaryProcessing,
   summaryHtml,
 }) => {
@@ -14,19 +15,23 @@ const OcrOutput = ({
       {isOcrProcessing ? (
         <p>처리 중...</p>
       ) : (
-        <div
-          dangerouslySetInnerHTML={{ __html: htmlOutput }}
-          className="output"
-        />
+        htmlOutput && ( // htmlOutput
+          <textarea
+            value={htmlOutput}
+            onChange={(e) => setHtmlOutput(e.target.value)} // 상위 컴포넌트에 변경 반영
+            className="output-textarea"
+          />
+        )
       )}
 
-      {htmlOutput && ( // OCR 결과가 있을 때만 요약 및 정형화 결과 표시
+      {htmlOutput && (
         <>
+          <h2>요약 및 정형화 결과</h2>
           {isSummaryProcessing ? (
             <p>처리 중...</p>
           ) : (
             <div
-              dangerouslySetInnerHTML={{ __html: summaryHtml }} // HTML로 요약 결과 표시
+              dangerouslySetInnerHTML={{ __html: summaryHtml }}
               className="output"
             />
           )}
