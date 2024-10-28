@@ -1,7 +1,19 @@
-"# OCR-Business-Assistant" <br/>
+<h3>OCR-Business-Assistant Project</h3>
 산학협력 프로젝트 <br/>
-오픈소스 OCR 기능을 활용해서 이미지 기반의 문서에 대한 라이브러리 구축 및 서비스 기능 개발 프로젝트 구현<br/>
-멘토기업 : 에이프리카<br/>
+개요 : GPT API를 이용한 OCR 비전 처리와 LLM 기반 문서 처리<br/>
+멘토기업 : ㈜에이프리카<br/>
+
+<p>
+기술 스택 : <br>
+<img src="https://img.shields.io/badge/HTML5-E34F26?style=for-the-badge&logo=HTML5&logoColor=white">
+<img src="https://img.shields.io/badge/CSS3-1572B6?style=for-the-badge&logo=CSS3&logoColor=white">
+<img src="https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=JavaScript&logoColor=white">
+<img src="https://img.shields.io/badge/React-61DAFB?style=for-the-badge&logo=React&logoColor=white">
+<img src="https://img.shields.io/badge/python-3776AB?style=for-the-badge&logo=python&logoColor=white">
+<img src="https://img.shields.io/badge/flask-000000?style=for-the-badge&logo=flask&logoColor=white">
+<img src="https://img.shields.io/badge/gpt api-412991?style=for-the-badge&logo=openai&logoColor=white">
+<img src="https://img.shields.io/badge/mongodb-47A248?style=for-the-badge&logo=mongodb&logoColor=white"><br>
+</p>
 
 Python 라이브러리 설치<br/>
 pip install -r requirements.txt
