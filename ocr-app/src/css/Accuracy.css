@@ -1,0 +1,21 @@
+.text-container {
+  display: flex;
+  justify-content: space-evenly; /* 양쪽 끝으로 분포 */
+  width: 80%; /* 전체 너비 사용 */
+  margin: 20px;
+  white-space: pre-wrap;
+  margin: 20px auto; /* 중앙 정렬을 위해 auto 설정 */
+}
+
+.text-output {
+  flex: 1; /* 같은 너비를 갖도록 설정 */
+  margin-left: 5px; /* 왼쪽 여백 추가 */
+  border: 1px solid #ccc; /* 테두리 추가 */
+  border-radius: 5px; /* 모서리 둥글게 처리 */
+  padding: 10px; /* 내부 여백 추가 */
+  min-width: 0; /* 최소 너비를 0으로 설정하여 균형 유지 */
+  overflow: auto; /* 내용이 넘칠 경우 스크롤 가능 */
+  margin-top: 10px; /* 위쪽 여백 추가 */
+  text-align: left; /* 텍스트 왼쪽 정렬 */
+  max-width: 100%; /* 최대 너비 100%로 설정 */
+}

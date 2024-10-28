@@ -8,7 +8,7 @@ import fitz
 import io
 from PIL import Image, ImageEnhance
 import base64
-import Levenshtein
+from bson import ObjectId
 
 load_dotenv()  # 환경 변수 로드
 
@@ -225,14 +225,16 @@ def save_db_data(upload_id, filename, ocr_text, summary, formatted_data, upload_
         print(f"Error in save_db_data: {str(e)}")
         return None
     
-def calculate_accuracy(original_text, ocr_text):
-    if not original_text or not ocr_text:
-        return 0.0
+def get_ocr_text_from_upload(upload_id):
+    # MongoDB 쿼리 예시
+    original = upload_collection.find_one({"_id": ObjectId(upload_id)})
+    if original:
+        original_text = original["ocr_text"]  # ocr_text 키에서 값 반환
+        return original_text
 
-    # Levenshtein distance 계산
-    distance = Levenshtein.distance(original_text, ocr_text)
-    max_len = max(len(original_text), len(ocr_text))
-
-    # 정확도 계산
-    accuracy = (1 - distance / max_len) * 100  # 비율을 퍼센트로 변환
-    return accuracy
+def get_ocr_text_from_data(upload_id):
+    # MongoDB 쿼리 예시
+    data = data_collection.find_one({"upload_id": upload_id})
+    if data:
+        data_text = data["ocr_text"]
+        return data_text

@@ -221,9 +221,10 @@ function App() {
           <OcrOutput
             isOcrProcessing={isOcrProcessing}
             htmlOutput={htmlOutput}
-            setHtmlOutput={setHtmlOutput} // 추가된 부분
+            setHtmlOutput={setHtmlOutput}
             isSummaryProcessing={isSummaryProcessing}
             summaryHtml={summaryHtml}
+            uploadId={uploadId}
           />
         </div>
       </div>

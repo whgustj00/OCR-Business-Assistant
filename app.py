@@ -20,11 +20,13 @@ headers = {
 from extract_text import extract_text
 from summarize import summarize_and_format
 from search import search
+from accuracy import accuracy
 
 # 라우트 등록
 app.register_blueprint(extract_text)
 app.register_blueprint(summarize_and_format)
 app.register_blueprint(search)
+app.register_blueprint(accuracy)
 
 if __name__ == '__main__':
     app.run(debug=True)
