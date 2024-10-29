@@ -19,3 +19,7 @@
   text-align: left; /* 텍스트 왼쪽 정렬 */
   max-width: 100%; /* 최대 너비 100%로 설정 */
 }
+
+.title {
+  text-align: center;
+}

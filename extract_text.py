@@ -1,11 +1,12 @@
 from flask import Blueprint, request, jsonify
 from PIL import Image
-from models import save_image_to_gridfs, save_db_upload, convert_pdf_to_images, preprocess_image, perform_ocr, parse_page_range
+from models import api_url, secret_key, perform_clova_ocr, save_image_to_gridfs, save_db_upload, convert_pdf_to_images, preprocess_image, perform_ocr, parse_page_range
 
 extract_text = Blueprint('extract_text', __name__)
 
 @extract_text.route('/extract_text', methods=['POST'])
 def extract_text_route():
+    
     try:
         if 'file' not in request.files:
             return jsonify({"error": "파일이 없습니다."}), 400
@@ -51,7 +52,8 @@ def extract_text_route():
             image_id = save_image_to_gridfs(img)
             # 이미지 전처리 후 OCR 수행
             img = preprocess_image(img)
-            ocr_text = perform_ocr(img)  # OCR 수행
+            ocr_text = perform_clova_ocr(img, api_url, secret_key)  # CLOVA OCR 수행
+            # ocr_text = perform_ocr(img) # GPT API OCR 수행
 
         # 업로드 정보를 DB에 저장
         upload_id = save_db_upload(file.filename, ocr_text, image_id)

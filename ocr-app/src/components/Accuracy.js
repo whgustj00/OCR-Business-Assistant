@@ -47,7 +47,6 @@ const Accuracy = () => {
             {part.value}
           </span>
         );
-        highlightedOriginal.push(part.value); // 원본 텍스트는 그대로 추가
       } else if (part.removed) {
         // 원본 텍스트에서 삭제된 부분 강조
         highlightedOriginal.push(
@@ -72,7 +71,7 @@ const Accuracy = () => {
   );
 
   return (
-    <div>
+    <div className="title">
       <h2>정확도 비교</h2>
       {accuracy !== null && <h3>정확도: {accuracy.toFixed(2)}%</h3>}
       <div className="text-container">

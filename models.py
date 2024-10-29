@@ -9,9 +9,17 @@ import io
 from PIL import Image, ImageEnhance
 import base64
 from bson import ObjectId
+import uuid
+import time
+import json
+import string
 
 load_dotenv()  # 환경 변수 로드
 
+
+# 클로바 OCR
+secret_key = os.getenv("api")
+api_url = 'https://mfpxhmwxm2.apigw.ntruss.com/custom/v1/35426/9ce749152d8f697b1dde8d90136d7443f3ee7b7038574145809c266e3f416d80/general'
 
 # MongoDB Atlas 연결 설정
 MONGO_URI = os.getenv("MONGODB_URL")
@@ -47,14 +55,23 @@ def preprocess_image(image):
 
     # 대비 증가
     enhancer = ImageEnhance.Contrast(image)
-    image = enhancer.enhance(1.2)  # 대비 증가 (값 조정 가능)
+    image = enhancer.enhance(2)  # 대비 증가 (값 조정 가능)
 
     # 해상도 향상
-    image = image.resize((image.width * 7, image.height * 7), Image.LANCZOS)  # 해상도 향상
+    resize_num = 2
+    image = image.resize((image.width * resize_num, image.height * resize_num))  # 해상도 향상
+
+    # # 3. 이진화 (Adaptive Thresholding)
+    # image_array = np.array(image)
+    # threshold_value = image_array.mean()  # 평균값을 임계값으로 사용
+    # binary_image = (image_array > threshold_value) * 255  # 이진화
+    # image = Image.fromarray(binary_image.astype(np.uint8))
 
     # 선명도 향상
     enhancer = ImageEnhance.Sharpness(image)
-    image = enhancer.enhance(1.5)  # 선명도 증가 (값 조정 가능)
+    image = enhancer.enhance(2)  # 선명도 증가 (값 조정 가능)
+
+    image.save(os.path.join("processed_image/output_image.png"))
     return image
 
 def perform_ocr(image):
@@ -62,7 +79,7 @@ def perform_ocr(image):
     try:
         # 이미지를 base64 인코딩
         buffered = io.BytesIO()
-        image.save(buffered, format="JPEG")
+        image.save(buffered, format="PNG")
         base64_image = base64.b64encode(buffered.getvalue()).decode('utf-8')
 
         # OCR 요청 페이로드
@@ -74,7 +91,7 @@ def perform_ocr(image):
                     "content": [
                         {
                             "type": "text",
-                            "text": "이 이미지에서 OCR 수행해줘. 요약하지 말고 텍스트 그대로 출력해야 돼. 그 외 내용은 출력 금지."
+                            "text": "이 이미지의 모든 텍스트를 정확히 추출하세요. 요약이나 재구성은 하지 마세요."
                         },
                         {
                             "type": "image_url",
@@ -95,6 +112,85 @@ def perform_ocr(image):
     except Exception as e:
         print(f"OCR 처리 중 오류 발생: {str(e)}")
         return "OCR 실패: 오류 발생"
+
+def perform_clova_ocr(image_file, api_url, secret_key):
+    """네이버 클로바 OCR을 사용하여 이미지에서 텍스트를 추출하는 함수"""
+    try:
+        # 요청 JSON 구성
+        request_json = {
+            'images': [
+                {
+                    'format': 'png',
+                    'name': 'demo'
+                }
+            ],
+            'requestId': str(uuid.uuid4()),
+            'version': 'V2',
+            'timestamp': int(round(time.time() * 1000))
+        }
+
+        payload = {'message': json.dumps(request_json).encode('UTF-8')}
+
+        # PIL 이미지 객체를 바이트로 변환
+        img_byte_arr = io.BytesIO()
+        image_file.save(img_byte_arr, format='PNG')  # 또는 필요한 형식으로 변경
+        img_byte_arr.seek(0)  # 바이트 배열의 시작으로 이동
+
+        # 파일 객체를 사용하여 POST 요청
+        files = [
+            ('file', img_byte_arr)  # 바이트로 변환된 파일 객체
+        ]
+        headers = {
+            'X-OCR-SECRET': secret_key
+        }
+
+        # POST 요청
+        response = requests.post(api_url, headers=headers, data=payload, files=files)
+
+        # 응답 처리
+        if response.status_code == 200:
+            ocr_result = response.json()
+            extracted_text = []
+            previous_y_ratio = None
+            previous_x_ratio = None
+
+            for image in ocr_result.get('images', []):
+                img_height = image.get("convertedImageInfo", {}).get("height", 1)
+                img_width = image.get("convertedImageInfo", {}).get("width", 1)
+
+                for field in image.get('fields', []):
+                    current_y = field['boundingPoly']['vertices'][0]['y']
+                    current_x = field['boundingPoly']['vertices'][0]['x']
+                    current_y_ratio = current_y / img_height
+                    current_x_ratio = current_x / img_width
+                    text = field.get('inferText', '') + ' '
+
+                    # y 좌표 차이에 따라 줄바꿈 추가
+                    if previous_y_ratio is None or abs(previous_y_ratio - current_y_ratio) > 0.03:
+                        extracted_text.append('\n\n')  # 두 줄 줄바꿈
+                        previous_x_ratio = None  # x 좌표 초기화
+                    elif abs(previous_y_ratio - current_y_ratio) > 0.01:
+                        extracted_text.append('\n')  # 한 줄 줄바꿈
+                        previous_x_ratio = None  # x 좌표 초기화
+                    
+                    # x 좌표 차이에 따라 탭 추가
+                    if previous_x_ratio is not None:
+                        if abs(current_x_ratio - previous_x_ratio) > 0.16:
+                            extracted_text.append(' ')
+
+                    extracted_text.append(text)
+                    previous_y_ratio = current_y_ratio
+                    previous_x_ratio = current_x_ratio
+            
+            return ''.join(extracted_text).strip()  # 추출한 텍스트 반환
+        else:
+            print(f"API 요청 실패: {response.status_code}, {response.text}")
+            return "OCR 실패: API 요청 오류 발생"
+
+    except Exception as e:
+        print(f"OCR 처리 중 오류 발생: {str(e)}")
+        return "OCR 실패: 오류 발생"
+    
 
 def summarize_text(text):
     """GPT-4o mini API를 사용하여 텍스트 요약"""
