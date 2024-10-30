@@ -35,7 +35,6 @@ const Accuracy = () => {
   const highlightDifferences = (original, modified) => {
     const diff = diffWords(original, modified);
 
-    // 원본 텍스트와 수정 텍스트를 강조 표시 설정
     const highlightedOriginal = [];
     const highlightedModified = [];
 
@@ -54,7 +53,6 @@ const Accuracy = () => {
             {part.value}
           </span>
         );
-        // 수정 텍스트에는 추가된 부분을 추가하지 않음
       } else {
         // 두 텍스트 모두 동일한 부분
         highlightedOriginal.push(part.value);

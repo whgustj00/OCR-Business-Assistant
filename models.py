@@ -113,6 +113,54 @@ def perform_ocr(image):
         print(f"OCR 처리 중 오류 발생: {str(e)}")
         return "OCR 실패: 오류 발생"
 
+def extract_text_with_layout(ocr_result):
+    """OCR 결과를 기반으로 개행과 공백을 조절하여 텍스트를 추출하는 함수"""
+    extracted_text = []
+
+    for image in ocr_result.get('images', []):
+        previous_y = None
+        previous_x_end = None
+
+        for index, field in enumerate(image.get('fields', [])):
+            current_y = field['boundingPoly']['vertices'][2]['y']  # 현재 텍스트 박스 하단 y좌표
+            current_x = field['boundingPoly']['vertices'][0]['x']  # 현재 텍스트 박스 첫 부분 x좌표
+            text = field.get('inferText', '') + ' '
+
+            # 이미지 높이 가져오기
+            img_height = image.get("convertedImageInfo", {}).get("height", 1)
+
+            # y 좌표 비율 계산
+            if previous_y is not None:
+                y_diff = abs(current_y - previous_y) / img_height  # 비율 계산
+                if y_diff > 0.15: 
+                    extracted_text.append('\n\n\n')  # 세 줄 개행
+                    previous_x_end = None
+                elif y_diff > 0.06: 
+                    extracted_text.append('\n\n')  # 두 줄 개행
+                    previous_x_end = None
+                elif y_diff > 0.03:  
+                    extracted_text.append('\n')  # 한 줄 개행
+                    previous_x_end = None
+
+            # x 좌표 비율 계산
+            if previous_x_end is not None:
+                x_diff = abs(current_x - previous_x_end)  # 현재 텍스트 박스 첫 부분과 이전 텍스트 박스 끝 부분 간의 차이
+                if x_diff > 60:
+                    extracted_text.append('    ')  # 공백 4개 추가
+                elif x_diff > 35:
+                    extracted_text.append('  ')  # 공백 2개 추가
+                elif x_diff > 15:
+                    extracted_text.append(' ')  # 공백 1개 추가
+
+            # 텍스트 추가
+            extracted_text.append(text)
+
+            # 이전 좌표 업데이트
+            previous_y = current_y
+            previous_x_end = field['boundingPoly']['vertices'][2]['x']  # 현재 텍스트 박스 하단 x좌표 업데이트
+
+    return ''.join(extracted_text).strip()
+
 def perform_clova_ocr(image_file, api_url, secret_key):
     """네이버 클로바 OCR을 사용하여 이미지에서 텍스트를 추출하는 함수"""
     try:
@@ -150,39 +198,17 @@ def perform_clova_ocr(image_file, api_url, secret_key):
         # 응답 처리
         if response.status_code == 200:
             ocr_result = response.json()
-            extracted_text = []
-            previous_y_ratio = None
-            previous_x_ratio = None
 
-            for image in ocr_result.get('images', []):
-                img_height = image.get("convertedImageInfo", {}).get("height", 1)
-                img_width = image.get("convertedImageInfo", {}).get("width", 1)
+            output_json_path = './ocr_result_json/ocr_result.json'
 
-                for field in image.get('fields', []):
-                    current_y = field['boundingPoly']['vertices'][0]['y']
-                    current_x = field['boundingPoly']['vertices'][0]['x']
-                    current_y_ratio = current_y / img_height
-                    current_x_ratio = current_x / img_width
-                    text = field.get('inferText', '') + ' '
+            with open(output_json_path, 'w', encoding='utf-8') as json_file:
+                json.dump(ocr_result, json_file, ensure_ascii=False, indent=4)
 
-                    # y 좌표 차이에 따라 줄바꿈 추가
-                    if previous_y_ratio is None or abs(previous_y_ratio - current_y_ratio) > 0.03:
-                        extracted_text.append('\n\n')  # 두 줄 줄바꿈
-                        previous_x_ratio = None  # x 좌표 초기화
-                    elif abs(previous_y_ratio - current_y_ratio) > 0.01:
-                        extracted_text.append('\n')  # 한 줄 줄바꿈
-                        previous_x_ratio = None  # x 좌표 초기화
-                    
-                    # x 좌표 차이에 따라 탭 추가
-                    if previous_x_ratio is not None:
-                        if abs(current_x_ratio - previous_x_ratio) > 0.16:
-                            extracted_text.append(' ')
+            print(f"OCR 결과가 {output_json_path}에 저장되었습니다.")
 
-                    extracted_text.append(text)
-                    previous_y_ratio = current_y_ratio
-                    previous_x_ratio = current_x_ratio
-            
-            return ''.join(extracted_text).strip()  # 추출한 텍스트 반환
+            # OCR 결과를 기반으로 텍스트 추출
+            formatted_text = extract_text_with_layout(ocr_result)  # 개행 및 공백 조절
+            return formatted_text  # 추출한 텍스트 반환
         else:
             print(f"API 요청 실패: {response.status_code}, {response.text}")
             return "OCR 실패: API 요청 오류 발생"
