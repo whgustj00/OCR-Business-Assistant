@@ -230,10 +230,10 @@ def summarize_text(text):
             "messages": [
                 {
                     "role": "user",
-                    "content": f"다음 텍스트의 중요 내용을 200토큰 안에 요약해줘:\n\n{text}"
+                    "content": f"다음 텍스트의 중요 내용을 300토큰 안에 요약해줘:\n\n{text}"
                 }
             ],
-            "max_tokens": 200
+            "max_tokens": 300
         }
 
         # GPT-4o mini API로 요약 요청
@@ -256,7 +256,7 @@ def format_data(text):
                     "content": f"다음 텍스트에서 문서 형식, 기업명, 관리자, 대표자, 전화번호, 날짜, 금액 그 외 등등 문서의 중요한 데이터들을 추출해서 '키 : 값' 형식으로 정형화해줘.:\n\n{text}\n\n 그 외 너의 말은 출력하지마"
                 }
             ],
-            "max_tokens": 300
+            "max_tokens": 400
         }
 
         # GPT-4o mini API로 데이터 정형화 요청
