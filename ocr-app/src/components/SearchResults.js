@@ -5,16 +5,22 @@ function SearchResults() {
   const location = useLocation();
   const [searchResults, setSearchResults] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState(""); // 에러 메시지 상태 추가
   const queryParams = new URLSearchParams(location.search);
   const query = queryParams.get("query"); // 쿼리 파라미터로 검색어 추출
+  const startDate = queryParams.get("start_date"); // 시작 날짜 가져오기
+  const endDate = queryParams.get("end_date"); // 끝 날짜 가져오기
 
   useEffect(() => {
     // 검색 요청 함수
     const fetchSearchResults = async () => {
       setIsLoading(true);
+      setErrorMessage(""); // 이전 에러 메시지 초기화
       try {
         const response = await fetch(
-          `http://127.0.0.1:5000/search?query=${encodeURIComponent(query)}`
+          `http://127.0.0.1:5000/search?query=${encodeURIComponent(query)}${
+            startDate ? `&start_date=${encodeURIComponent(startDate)}` : ""
+          }${endDate ? `&end_date=${encodeURIComponent(endDate)}` : ""}`
         );
 
         // 응답이 JSON 형식인지 확인
@@ -33,6 +39,7 @@ function SearchResults() {
         }
       } catch (error) {
         console.error("Error fetching search results:", error);
+        setErrorMessage("검색 결과를 가져오는 데 오류가 발생했습니다."); // 에러 메시지 설정
         setSearchResults([]); // 오류 발생 시 빈 배열 설정
       } finally {
         setIsLoading(false);
@@ -42,13 +49,15 @@ function SearchResults() {
     if (query) {
       fetchSearchResults();
     }
-  }, [query]);
+  }, [query, startDate, endDate]); // 의존성 배열에 날짜도 추가
 
   if (isLoading) return <div>검색 중...</div>;
 
   return (
     <div>
       <h2>검색 결과 : {query}</h2>
+      {errorMessage && <div className="error-message">{errorMessage}</div>}{" "}
+      {/* 에러 메시지 표시 */}
       <div className="search-results">
         {searchResults.length > 0 ? (
           searchResults.map((result, index) => (
