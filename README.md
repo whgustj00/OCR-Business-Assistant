@@ -1,6 +1,6 @@
 # OCR-Business-Assistant Project
 산학협력 프로젝트 <br/>
-개요 : GPT API를 이용한 OCR 비전 처리와 LLM 기반 문서 처리<br/>
+개요 : CLOVA OCR과 GPT API를 활용한 LLM 기반 문서 처리<br/>
 멘토기업 : ㈜에이프리카<br/>
 
 <p>
