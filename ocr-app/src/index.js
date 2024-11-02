@@ -4,6 +4,8 @@ import { BrowserRouter as Router, Route, Routes } from "react-router-dom"; // Re
 import App from "./components/App"; // App 컴포넌트 임포트
 import SearchResults from "./components/SearchResults"; // SearchResults 컴포넌트 임포트
 import Accuracy from "./components/Accuracy";
+import LlmSearchResults from "./components/LlmSearchResults"; // LLM 검색 결과 컴포넌트 추가
+
 import "./index.css"; // CSS 파일을 추가하세요.
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
@@ -16,6 +18,8 @@ root.render(
         {/* 검색 결과 페이지 */}
         <Route path="/accuracy/:uploadId" element={<Accuracy />} />{" "}
         {/* 정확도 비교 페이지 */}
+        <Route path="/search_llm" element={<LlmSearchResults />} />{" "}
+        {/* LLM 검색 결과 경로 추가 */}
       </Routes>
     </Router>
   </React.StrictMode>
