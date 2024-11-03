@@ -1,67 +1,79 @@
 from flask import Blueprint, request, jsonify
-from models import call_gpt_api, data_collection
-import json
+from models import data_collection, call_gpt_api
+import chromadb
+from bson import ObjectId
+import os
 
 search_llm = Blueprint('search_llm', __name__)
 
-@search_llm.route('/search_llm', methods=['GET'])
-def search_llm_route():
-    user_query = request.args.get('query', '')
+# Chroma 클라이언트 설정 (데이터 디렉토리 지정)
+chroma_client = chromadb.Client()
 
-    if not user_query:
-        return jsonify({"error": "검색어가 필요합니다."}), 400
-
+def generate_embedding(text):
+    """GPT-4o mini API를 사용하여 텍스트 임베딩 생성"""
     try:
-        # GPT API를 통해 MongoDB 쿼리문 생성
-        search_payload = {
+        # 텍스트 임베딩 요청 페이로드
+        embedding_payload = {
             "model": "gpt-4o-mini",
             "messages": [
                 {
                     "role": "user",
-                    "content": f"다음 요청에 대한 MongoDB 쿼리문을 작성해줘: '{user_query}'. 반환 형식은 JSON이어야 하며, 올바른 쿼리문을 작성해야 합니다."
+                    "content": f"다음 텍스트의 임베딩을 제공해줘:\n\n{text}"
                 }
-            ],
-            "max_tokens": 300
+            ]
         }
 
-        # GPT API 호출
-        gpt_res = call_gpt_api(search_payload)
-        print("GPT API 응답:", gpt_res)  # GPT 응답을 출력하여 확인
+        # GPT-4o mini API로 임베딩 요청
+        embedding = call_gpt_api(embedding_payload)
+        return embedding
 
-        # 응답 형식이 JSON 형식인지 확인하고 MongoDB 쿼리 추출
-        if not isinstance(gpt_res, dict) or 'choices' not in gpt_res:
-            print("GPT API 응답 형식이 잘못되었습니다.")
-            return jsonify({"error": "GPT API 응답 형식이 잘못되었습니다."}), 500
+    except Exception as e:
+        print(f"임베딩 처리 중 오류 발생: {str(e)}")
+        return "임베딩 실패: 오류 발생"
 
-        # 'query' 키로 MongoDB 쿼리 가져오기
-        gpt_query = gpt_res['choices'][0]['message']['content'].strip()
-        mongo_query = json.loads(gpt_query)
-        
-        # 'query' 키가 포함된 경우 실제 쿼리로 사용
-        if 'query' in mongo_query:
-            mongo_query = mongo_query['query']
+@search_llm.route('/search_llm', methods=['POST'])
+def search_llm_route():
+    # 사용자의 요청 데이터 가져오기
+    data = request.json
+    upload_id = data.get("upload_id")
 
-        print("MongoDB 쿼리:", mongo_query)
+    print(f"Received upload_id: {upload_id}")  # 요청 ID 출력
 
-        # MongoDB에서 검색 수행
-        results = list(data_collection.find(mongo_query))
-        print("검색 결과:", results)
+    # MongoDB에서 해당 문서 가져오기
+    original_doc = data_collection.find_one({"upload_id": upload_id})
+    if not original_doc:
+        return jsonify({"error": "문서를 찾을 수 없습니다."}), 404
 
-        # 검색 결과에서 문서의 정보를 추출
-        documents = []
-        for result in results:
-            documents.append({
-                "filename": result['filename'],
-                "summary": result['summary'],
-                "upload_date": result['upload_date'].strftime("%Y-%m-%d %H:%M:%S"),
-                "image_id": result.get('image_id', '')  # image_id가 없을 경우를 대비
+    print("Document found:", original_doc)  # 찾은 문서 정보 출력
+
+    # OCR 텍스트 추출
+    ocr_text = original_doc.get("ocr_text")
+    if not ocr_text:
+        return jsonify({"error": "OCR 텍스트가 없습니다."}), 404
+
+    print("Extracted OCR text:", ocr_text)  # OCR 텍스트 출력
+
+    # 임베딩 생성
+    embedding = generate_embedding(ocr_text)
+    print("Generated embedding:", embedding)  # 생성된 임베딩 출력
+
+    # Chroma에서 유사한 문서 검색
+    results = chroma_client.search(query=embedding, n_results=5)  # 5개의 유사 문서 반환
+    print("Search results:", results)  # 검색 결과 출력
+    
+    # 검색 결과를 기반으로 MongoDB에서 관련 문서들 조회
+    related_docs = []
+    for result in results:
+        doc_id = result['document_id']
+        doc = data_collection.find_one({"_id": ObjectId(doc_id)})
+        if doc:
+            related_docs.append({
+                "filename": doc["filename"],
+                "summary": doc.get("summary"),
+                "formatted_data": doc.get("formatted_data")
             })
 
-        return jsonify({"results": documents})
+    print("Related documents:", related_docs)  # 관련 문서 출력
 
-    except json.JSONDecodeError as e:
-        print(f"JSON Decode Error: {str(e)}")  # JSON 오류 상세 출력
-        return jsonify({"error": f"쿼리문이 올바르지 않습니다: {str(e)}"}), 400
-    except Exception as e:
-        print(f"Unhandled Error: {str(e)}")  # 예상치 못한 오류 상세 출력
-        return jsonify({"error": str(e)}), 500
+    # 결과 반환
+    return jsonify({"related_docs": related_docs})
