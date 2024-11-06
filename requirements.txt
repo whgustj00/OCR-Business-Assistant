@@ -12,3 +12,7 @@ tools==0.1.9
 python-dotenv==1.0.1
 pymongo==4.10.1
 Levenshtein==0.26.1
+langchain==0.3.7
+langchain-community==0.3.5
+langchain-openai==0.2.6
+chromadb==0.5.17
