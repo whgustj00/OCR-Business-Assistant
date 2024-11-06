@@ -44,14 +44,6 @@ pre {
   font-size: 15px; /* 글자 크기 설정 */
 }
 
-.date-input {
-  flex: 1; /* 가로 너비를 1:1 비율로 조정 */
-  margin: 0 10px; /* 좌우 여백 추가 */
-  padding: 7px; /* 내부 여백 추가 */
-  border: 1px solid #ccc; /* 테두리 색상 */
-  border-radius: 4px; /* 모서리 둥글게 */
-}
-
 .label {
   display: flex; /* 플렉스 박스 사용 */
   flex-direction: column; /* 세로로 정렬 */
@@ -67,31 +59,46 @@ pre {
   cursor: pointer; /* 커서 스타일 변경 */
   font-size: 16px; /* 글자 크기 설정 */
   transition: background-color 0.3s; /* 배경색 변화 효과 */
-  width: 15%; /* 전체 너비 사용 */
+  width: 150px;
+  margin-top: 10px;
 }
 
 .button:hover {
   background-color: #0056b3; /* 호버 시 배경색 */
 }
-
-.llm-title {
-  margin-top: 20px; /* 위 여백 추가 */
-  font-size: 20px; /* 크기 설정 */
-  color: #333; /* 글자 색상 설정 */
+.search-container {
+  background-color: #fff; /* 배경색 */
+  padding: 20px; /* 내부 여백 */
+  border: 1px solid #ccc; /* 테두리 */
+  border-radius: 8px; /* 둥근 모서리 */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); /* 그림자 */
 }
 
-.search-container {
-  max-width: 550px; /* 최대 너비 설정 */
+.search-wrapper {
+  display: flex; /* 두 검색 영역을 좌우로 배치 */
+  justify-content: space-between; /* 양쪽 끝으로 배치 */
+  max-width: 70%; /* 최대 너비 설정 */
   margin: 20px auto; /* 상단 여백과 중앙 정렬 */
   padding: 20px; /* 내부 여백 추가 */
-  border: 1px solid #ccc; /* 테두리 추가 */
-  border-radius: 8px; /* 모서리 둥글게 */
-  background-color: #fff; /* 배경색 */
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); /* 그림자 추가 */
+  flex-wrap: wrap; /* 화면 크기 축소 시 다음 줄로 내려가도록 설정 */
+}
+
+.search-left,
+.search-right {
+  width: 45%; /* 각 요소의 너비를 48%로 설정하여 여백을 확보 */
 }
 
 .date-picker-container {
-  display: flex; /* 플렉스 박스 사용 */
-  justify-content: space-between; /* 양쪽으로 균등 배치 */
-  margin: 10px 0; /* 위아래 여백 추가 */
+  display: flex;
+  justify-content: space-between;
+  margin: 10px 0;
+  flex-wrap: wrap; /* 화면 축소 시 줄바꿈 */
+}
+
+.date-input {
+  flex: 1; /* 가로 너비를 1:1 비율로 조정 */
+  margin: 0 10px; /* 좌우 여백 추가 */
+  padding: 7px; /* 내부 여백 추가 */
+  border: 1px solid #ccc; /* 테두리 색상 */
+  border-radius: 4px; /* 모서리 둥글게 */
 }

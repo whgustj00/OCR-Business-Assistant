@@ -4,7 +4,6 @@ import { getDocument } from "pdfjs-dist/webpack";
 import FileUpload from "./FileUpload";
 import ImagePreview from "./ImagePreview";
 import OcrOutput from "./OcrOutput";
-import LlmSearchResults from "./LlmSearchResults"; // LLM 검색 결과 컴포넌트
 import { useNavigate } from "react-router-dom";
 import "../css/App.css";
 
@@ -20,7 +19,7 @@ function App() {
   const [searchTerm, setSearchTerm] = useState("");
   const [startDate, setStartDate] = useState(""); // 시작 날짜 상태
   const [endDate, setEndDate] = useState(""); // 종료 날짜 상태
-  const [llmSearchTerm, setLlmSearchTerm] = useState("");
+  const [ragSearchTerm, setRagSearchTerm] = useState(""); // 수정된 변수명
   const [summaryHtml, setSummaryHtml] = useState("");
   const [formattedData, setFormattedData] = useState({});
   const [fileName, setFileName] = useState("");
@@ -45,13 +44,13 @@ function App() {
 
     navigate(`${query}${startParam}${endParam}`);
   };
-  // LLM 검색 요청 처리
-  const handleLLMSearch = async () => {
-    if (!llmSearchTerm) {
+  // RAG 검색 요청 처리
+  const handleRagSearch = async () => {
+    if (!ragSearchTerm) {
       alert("검색어를 입력하세요.");
       return;
     }
-    navigate(`/search_llm?query=${encodeURIComponent(llmSearchTerm)}`);
+    navigate(`/ragpage?query=${encodeURIComponent(ragSearchTerm)}`);
   };
 
   const validatePageRange = (range) => {
@@ -196,58 +195,69 @@ function App() {
         <h1 className="navbar-title">OCR 비즈니스 어시스턴트</h1>
       </nav>
       <div className="App">
-        <div className="search-container">
-          <input
-            className="input"
-            type="text"
-            placeholder="문서 검색"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                handleSearch(); // 엔터 키를 누르면 검색 실행
-              }
-            }}
-          />
-
-          <div className="date-picker-container">
-            <label className="label">
-              시작 날짜:
+        <div className="search-wrapper">
+          <div className="search-left">
+            <div className="search-container">
               <input
-                className="date-input"
-                type="date"
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
+                className="input"
+                type="text"
+                placeholder="문서 검색"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    handleSearch(); // 엔터 키를 누르면 검색 실행
+                  }
+                }}
               />
-            </label>
+              <div className="date-picker-container">
+                <label className="label">
+                  시작 날짜:
+                  <input
+                    className="date-input"
+                    type="date"
+                    value={startDate}
+                    onChange={(e) => setStartDate(e.target.value)}
+                  />
+                </label>
 
-            <label className="label">
-              종료 날짜:
-              <input
-                className="date-input"
-                type="date"
-                value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
-              />
-            </label>
+                <label className="label">
+                  종료 날짜:
+                  <input
+                    className="date-input"
+                    type="date"
+                    value={endDate}
+                    onChange={(e) => setEndDate(e.target.value)}
+                  />
+                </label>
+              </div>
+              <button className="button" onClick={handleSearch}>
+                검색
+              </button>
+            </div>
           </div>
-          <button className="button" onClick={handleSearch}>
-            검색
-          </button>
+
+          <div className="search-right">
+            <div className="search-container">
+              <input
+                className="input"
+                type="text"
+                placeholder="RAG 검색어 입력"
+                value={ragSearchTerm}
+                onChange={(e) => setRagSearchTerm(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    handleRagSearch(); // 수정된 함수 호출
+                  }
+                }}
+              />
+              <button className="button" onClick={handleRagSearch}>
+                RAG 검색
+              </button>
+            </div>
+          </div>
         </div>
-        {/* LLM 검색 입력 */}
-        <input
-          type="text"
-          placeholder="LLM 검색어 입력"
-          value={llmSearchTerm}
-          onChange={(e) => setLlmSearchTerm(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              handleLLMSearch(); // 엔터 키를 누르면 LLM 검색 실행
-            }
-          }}
-        />
-        <button onClick={handleLLMSearch}>LLM 검색</button>
+
         <FileUpload onFileUpload={handleFileUpload} />
         <input
           type="text"
@@ -257,7 +267,11 @@ function App() {
           disabled={file && file.type !== "application/pdf"}
         />
         <br />
-        <button onClick={handleTextExtraction} disabled={isOcrProcessing}>
+        <button
+          className="button"
+          onClick={handleTextExtraction}
+          disabled={isOcrProcessing}
+        >
           텍스트 추출
         </button>
         {htmlOutput && (

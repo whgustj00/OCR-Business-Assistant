@@ -1,0 +1,59 @@
+/* RagPage.css */
+
+.rag-page {
+  font-family: "Arial", sans-serif;
+  padding: 15px; /* 패딩을 줄여서 더 컴팩트하게 만듦 */
+  background-color: #f9f9f9;
+  max-width: 900px; /* 최대 너비 설정 */
+  margin: 0 auto; /* 가운데 정렬 */
+}
+
+h2 {
+  color: #333;
+  font-size: 1.5rem; /* 제목 크기 조정 */
+  margin-bottom: 10px;
+}
+
+.search-results {
+  margin-top: 15px;
+}
+
+.result-answer {
+  background-color: #fff;
+  padding: 12px; /* 패딩을 줄여서 더 작게 만듦 */
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  font-size: 0.95rem; /* 폰트 크기를 조금 줄임 */
+}
+
+.document-card {
+  background-color: #fff;
+  padding: 15px; /* 패딩을 줄여서 더 작게 만듦 */
+  border-radius: 8px;
+  margin-top: 15px; /* 마진을 줄여서 간격을 조정 */
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.document-details p {
+  margin: 8px 0; /* 줄 간격을 줄여서 더 컴팩트하게 만듦 */
+  font-size: 0.95rem; /* 텍스트 크기 줄이기 */
+}
+
+.document-content {
+  padding: 8px; /* 패딩을 줄여서 더 작게 만듦 */
+  background-color: #f4f4f4;
+  border-radius: 5px;
+  white-space: pre-wrap; /* Ensure the text preserves line breaks */
+  font-size: 0.95rem; /* 폰트 크기 줄이기 */
+}
+
+.error-message {
+  color: red;
+  font-size: 14px; /* 에러 메시지 폰트 크기 줄이기 */
+  margin-top: 10px;
+}
+
+.loading {
+  font-size: 16px; /* 로딩 메시지 크기 줄이기 */
+  color: #007bff;
+}
