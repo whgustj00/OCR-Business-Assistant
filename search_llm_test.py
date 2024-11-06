@@ -1,7 +1,6 @@
 from models import data_collection, api_key, call_gpt_api
 import chromadb
 import requests
-from bson import ObjectId
 from datetime import datetime
 import pytz
 
