@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from models import get_ocr_text_from_upload, get_ocr_text_from_data
+from models import get_ocr_text_from_upload, get_ocr_text_from_data, data_collection
 import Levenshtein
 
 accuracy = Blueprint('accuracy', __name__)
@@ -23,6 +23,12 @@ def accuracy_route():
     distance = Levenshtein.distance(original_text, ocr_text)
     max_len = max(len(original_text), len(ocr_text))
     accuracy = (1 - distance / max_len) * 100
+
+    # MongoDB에 accuracy 값을 추가
+    result = data_collection.update_one(
+        {"upload_id": upload_id},  # 조건: 해당 upload_id를 가진 문서 찾기
+        {"$set": {"accuracy": accuracy}}  # accuracy 필드 업데이트
+    )
 
     return jsonify({"accuracy": accuracy, "original_text" : original_text, "ocr_text": ocr_text})
 
