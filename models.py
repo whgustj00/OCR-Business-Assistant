@@ -112,53 +112,57 @@ def perform_ocr(image):
         print(f"OCR 처리 중 오류 발생: {str(e)}")
         return "OCR 실패: 오류 발생"
 
-def extract_text_with_layout(ocr_result):
-    """OCR 결과를 기반으로 개행과 공백을 조절하여 텍스트를 추출하는 함수"""
+def extract_text_with_layout(ocr_result, line_gap_threshold=3, paragraph_gap_threshold=30):
+    """OCR 결과에서 원래 문서 레이아웃을 최대한 유지하며 텍스트를 추출하는 함수"""
     extracted_text = []
 
     for image in ocr_result.get('images', []):
-        previous_y = None
+        previous_y_end = None
         previous_x_end = None
 
-        for index, field in enumerate(image.get('fields', [])):
-            current_y = field['boundingPoly']['vertices'][2]['y']  # 현재 텍스트 박스 하단 y좌표
-            current_x = field['boundingPoly']['vertices'][0]['x']  # 현재 텍스트 박스 첫 부분 x좌표
-            text = field.get('inferText', '') + ' '
+        for field in image.get('fields', []):
+            # 현재 단어의 좌표 및 텍스트 정보 추출
+            current_y_top = field['boundingPoly']['vertices'][1]['y']  # 현재 단어의 우상단 y좌표
+            current_y_bottom = field['boundingPoly']['vertices'][2]['y']  # 현재 단어의 우하단 y좌표
+            current_x_start = field['boundingPoly']['vertices'][0]['x']  # 현재 단어의 좌상단 x좌표
+            current_x_end = field['boundingPoly']['vertices'][1]['x']  # 현재 단어의 우상단 x좌표
+            text = field.get('inferText', '')
 
-            # 이미지 높이 가져오기
-            img_height = image.get("convertedImageInfo", {}).get("height", 1)
+            # 단어 높이 계산
+            word_height = current_y_bottom - current_y_top
 
-            # y 좌표 비율 계산
-            if previous_y is not None:
-                y_diff = abs(current_y - previous_y) / img_height  # 비율 계산
-                if y_diff > 0.15: 
-                    extracted_text.append('\n\n\n')  # 세 줄 개행
-                    previous_x_end = None
-                elif y_diff > 0.06: 
-                    extracted_text.append('\n\n')  # 두 줄 개행
-                    previous_x_end = None
-                elif y_diff > 0.025:  
+            # 수직 위치 차이에 따른 개행 판단 (단락 간격, 한 줄 간격 등)
+            if previous_y_end is not None:
+                y_diff = current_y_top - previous_y_end  # 현재 단어의 y좌표 상단과 이전 단어 y좌표 하단의 차이
+
+                # y_diff가 일정 간격을 넘으면 개행을 추가
+                if y_diff > paragraph_gap_threshold:
+                    extracted_text.append('\n\n')  # 두 줄 개행 (새 단락)
+                elif y_diff > line_gap_threshold:
                     extracted_text.append('\n')  # 한 줄 개행
-                    previous_x_end = None
 
-            # x 좌표 비율 계산
+            # 수평 위치 차이에 따른 공백 조절
             if previous_x_end is not None:
-                x_diff = abs(current_x - previous_x_end)  # 현재 텍스트 박스 첫 부분과 이전 텍스트 박스 끝 부분 간의 차이
-                if x_diff > 60:
-                    extracted_text.append('    ')  # 공백 4개 추가
-                elif x_diff > 35:
-                    extracted_text.append('  ')  # 공백 2개 추가
-                elif x_diff > 15:
-                    extracted_text.append(' ')  # 공백 1개 추가
+                x_diff = current_x_start - previous_x_end
+                if x_diff > 40:  # 큰 수평 간격: 공백 여러 개 추가
+                    extracted_text.append('    ')  # 공백 4칸 추가
+                elif x_diff > 15:  # 중간 수평 간격: 공백 2개 추가
+                    extracted_text.append('  ')  # 공백 2칸 추가
+                elif x_diff > 3:  # 작은 수평 간격: 공백 1개 추가
+                    extracted_text.append(' ')  # 공백 1칸 추가
 
             # 텍스트 추가
             extracted_text.append(text)
 
-            # 이전 좌표 업데이트
-            previous_y = current_y
-            previous_x_end = field['boundingPoly']['vertices'][2]['x']  # 현재 텍스트 박스 하단 x좌표 업데이트
+            # 이전 단어의 좌표 업데이트
+            previous_y_end = current_y_bottom  # 현재 단어의 우하단 y좌표
+            previous_x_end = current_x_end  # 현재 단어의 우상단 x좌표
+
+        # 이미지 단위로 구분
+        extracted_text.append('\n\n')  # 이미지 간 구분을 위한 개행
 
     return ''.join(extracted_text).strip()
+
 
 def perform_clova_ocr(image_file, api_url, secret_key):
     """네이버 클로바 OCR을 사용하여 이미지에서 텍스트를 추출하는 함수"""
