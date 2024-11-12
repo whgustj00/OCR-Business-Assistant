@@ -3,5 +3,5 @@
 .env
 
 *.pyc
-ocr_result_json\ocr_result.json
-processed_image\output_image.png
+ocr_result_json/ocr_result.json
+processed_image/output_image.png

@@ -112,7 +112,7 @@ def perform_ocr(image):
         print(f"OCR 처리 중 오류 발생: {str(e)}")
         return "OCR 실패: 오류 발생"
 
-def extract_text_with_layout(ocr_result, line_gap_threshold=3, paragraph_gap_threshold=30):
+def extract_text_with_layout(ocr_result):
     """OCR 결과에서 원래 문서 레이아웃을 최대한 유지하며 텍스트를 추출하는 함수"""
     extracted_text = []
 
@@ -126,30 +126,27 @@ def extract_text_with_layout(ocr_result, line_gap_threshold=3, paragraph_gap_thr
             current_y_bottom = field['boundingPoly']['vertices'][2]['y']  # 현재 단어의 우하단 y좌표
             current_x_start = field['boundingPoly']['vertices'][0]['x']  # 현재 단어의 좌상단 x좌표
             current_x_end = field['boundingPoly']['vertices'][1]['x']  # 현재 단어의 우상단 x좌표
-            text = field.get('inferText', '')
-
-            # 단어 높이 계산
-            word_height = current_y_bottom - current_y_top
+            text = field.get('inferText', '') + ' '
 
             # 수직 위치 차이에 따른 개행 판단 (단락 간격, 한 줄 간격 등)
             if previous_y_end is not None:
                 y_diff = current_y_top - previous_y_end  # 현재 단어의 y좌표 상단과 이전 단어 y좌표 하단의 차이
 
                 # y_diff가 일정 간격을 넘으면 개행을 추가
-                if y_diff > paragraph_gap_threshold:
+                if y_diff > 25:
                     extracted_text.append('\n\n')  # 두 줄 개행 (새 단락)
-                elif y_diff > line_gap_threshold:
+                    previous_x_end = 0
+                elif y_diff > 1:
                     extracted_text.append('\n')  # 한 줄 개행
+                    previous_x_end = 0
 
             # 수평 위치 차이에 따른 공백 조절
             if previous_x_end is not None:
-                x_diff = current_x_start - previous_x_end
+                x_diff = abs(current_x_start - previous_x_end)
                 if x_diff > 40:  # 큰 수평 간격: 공백 여러 개 추가
                     extracted_text.append('    ')  # 공백 4칸 추가
                 elif x_diff > 15:  # 중간 수평 간격: 공백 2개 추가
                     extracted_text.append('  ')  # 공백 2칸 추가
-                elif x_diff > 3:  # 작은 수평 간격: 공백 1개 추가
-                    extracted_text.append(' ')  # 공백 1칸 추가
 
             # 텍스트 추가
             extracted_text.append(text)
@@ -223,7 +220,7 @@ def perform_clova_ocr(image_file, api_url, secret_key):
 
 def summarize_text(text):
     """GPT-4o mini API를 사용하여 텍스트 요약"""
-    if len(text.split()) < 50:
+    if len(text.split()) < 30:
         return "텍스트가 너무 짧아 요약할 수 없습니다."
 
     try:
