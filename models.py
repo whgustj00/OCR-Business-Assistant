@@ -137,7 +137,7 @@ def extract_text_with_layout(ocr_result):
                 elif y_diff > 0.06: 
                     extracted_text.append('\n\n')  # 두 줄 개행
                     previous_x_end = None
-                elif y_diff > 0.03:  
+                elif y_diff > 0.025:  
                     extracted_text.append('\n')  # 한 줄 개행
                     previous_x_end = None
 

@@ -3,3 +3,5 @@
 .env
 
 *.pyc
+ocr_result.json
+output_image.png
