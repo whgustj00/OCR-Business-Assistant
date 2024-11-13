@@ -143,9 +143,9 @@ def extract_text_with_layout(ocr_result):
             # 수평 위치 차이에 따른 공백 조절
             if previous_x_end is not None:
                 x_diff = abs(current_x_start - previous_x_end)
-                if x_diff > 40:  # 큰 수평 간격: 공백 여러 개 추가
+                if x_diff > 50:  # 큰 수평 간격: 공백 여러 개 추가
                     extracted_text.append('    ')  # 공백 4칸 추가
-                elif x_diff > 15:  # 중간 수평 간격: 공백 2개 추가
+                elif x_diff > 25:  # 중간 수평 간격: 공백 2개 추가
                     extracted_text.append('  ')  # 공백 2칸 추가
 
             # 텍스트 추가
