@@ -12,6 +12,8 @@ from bson import ObjectId
 import uuid
 import time
 import json
+import pandas as pd
+import numpy as np
 
 load_dotenv()  # 환경 변수 로드
 
@@ -253,7 +255,7 @@ def format_data(text):
             "messages": [
                 {
                     "role": "user",
-                    "content": f"다음 텍스트에서 문서 형식, 기업명, 관리자, 대표자, 전화번호, 날짜, 금액 그 외 등등 문서의 중요한 데이터들을 추출해서 '키 : 값' 형식으로 정형화해줘.:\n\n{text}\n\n 그 외 너의 말은 출력하지마"
+                    "content": f"다음 텍스트에서 문서의 중요한 데이터들(예를 들어, 문서 형식, 기업명, 관리자, 대표자, 전화번호, 날짜, 금액 그 외 등등 문서 내용에 맞게 고쳐써야 함.)을 문서 내용에 맞게 추출해서 '키 : 값' 형식으로 정형화해줘.:\n\n{text}\n\n 그 외 너의 말은 출력하지마"
                 }
             ],
             "max_tokens": 400

@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 from PIL import Image
-from models import api_url, secret_key, perform_clova_ocr, save_image_to_gridfs, save_db_upload, convert_pdf_to_images, preprocess_image, perform_ocr, parse_page_range
+from models import api_url, secret_key, perform_clova_ocr, save_image_to_gridfs, save_db_upload, convert_pdf_to_images, preprocess_image, parse_page_range
 
 extract_text = Blueprint('extract_text', __name__)
 
