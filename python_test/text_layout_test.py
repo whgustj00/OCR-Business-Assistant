@@ -51,10 +51,16 @@ def extract_text_with_layout(ocr_result):
 
 
 if __name__ == '__main__':
-    json_path = './ocr_result_json/ocr_result.json'  # JSON 파일 경로
-    ocr_result = load_ocr_result(json_path)  # OCR 결과 로드
-    formatted_text = extract_text_with_layout(ocr_result)  # 개행 로직 적용
-    print(formatted_text)  # 최종 텍스트 출력
+    # json_path = './ocr_result_json/ocr_result.json'  # JSON 파일 경로
+    # ocr_result = load_ocr_result(json_path)  # OCR 결과 로드
+    # formatted_text = extract_text_with_layout(ocr_result)  # 개행 로직 적용
+    # print(formatted_text)  # 최종 텍스트 출력
     # for image in ocr_result.get("images", []):  # "images" 목록 탐색
     #     for field in image.get("fields", []):  # 각 "fields" 항목 탐색
     #         print(field.get("inferText", " "))  # "inferText" 값 출력
+    confidences = []
+    confidences.append(100)
+    confidences.append(97)
+    print(confidences)
+    overall_confidence = sum(confidences) / len(confidences) if confidences else 0
+    print(overall_confidence)

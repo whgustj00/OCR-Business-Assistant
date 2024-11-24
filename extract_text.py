@@ -20,6 +20,7 @@ def extract_text_route():
         pages_to_process = parse_page_range(page_range) if page_range else None  # 페이지 범위 파싱
 
         ocr_text = ""
+        confidences = []
 
         if file.content_type == 'application/pdf':
             # PDF 파일을 이미지로 변환
@@ -34,8 +35,9 @@ def extract_text_route():
                         image_id = save_image_to_gridfs(img)
                         # 이미지 전처리 후 OCR 수행
                         img = preprocess_image(img)
-                        ocr_text += f"=== 페이지 {page_number + 1} ===\n\n"  # 페이지 번호 추가
-                        ocr_text += perform_clova_ocr(img, api_url, secret_key) + "\n\n\n"  # OCR 수행 후 결과 구분
+                        formatted_text, confidence = perform_clova_ocr(img, api_url, secret_key)
+                        ocr_text += f"=== 페이지 {page_number + 1} ===\n\n{formatted_text}\n\n\n"
+                        confidences.append(confidence)  # Confidence 값 저장
             else:
                 # 모든 페이지 처리
                 for i, img in enumerate(images):
@@ -43,8 +45,9 @@ def extract_text_route():
                     image_id = save_image_to_gridfs(img)
                     # 이미지 전처리 후 OCR 수행
                     img = preprocess_image(img)
-                    ocr_text += f"=== 페이지 {i + 1} ===\n\n"  # 페이지 번호 추가
-                    ocr_text += perform_clova_ocr(img, api_url, secret_key) + "\n\n\n"  # OCR 수행 후 결과 구분
+                    formatted_text, confidence = perform_clova_ocr(img, api_url, secret_key)
+                    ocr_text += f"=== 페이지 {i + 1} ===\n\n{formatted_text}\n\n\n"
+                    confidences.append(confidence)  # Confidence 값 저장
         else:
             # JPG, PNG 등 이미지 파일 처리
             img = Image.open(file)
@@ -52,13 +55,19 @@ def extract_text_route():
             image_id = save_image_to_gridfs(img)
             # 이미지 전처리 후 OCR 수행
             img = preprocess_image(img)
-            ocr_text = perform_clova_ocr(img, api_url, secret_key)  # CLOVA OCR 수행
-            # ocr_text = perform_ocr(img) # GPT API OCR 수행
+            formatted_text, confidence = perform_clova_ocr(img, api_url, secret_key)
+            ocr_text = formatted_text
+            confidences.append(confidence)  # Confidence 값 저장
+
+        print(f"최종 유사도 리스트 : {confidences}")
+        # 전체 평균 정확도 계산
+        overall_confidence = sum(confidences) / len(confidences) if confidences else 0
+        print(f"평균 유사도 : + {overall_confidence}")
 
         # 업로드 정보를 DB에 저장
-        upload_id = save_db_upload(file.filename, ocr_text, image_id)
+        upload_id = save_db_upload(file.filename, ocr_text, image_id, overall_confidence)
 
-        return jsonify({"html": ocr_text, "upload_id": upload_id})
+        return jsonify({"html": ocr_text, "upload_id": upload_id, "confidence":overall_confidence})
 
     except Exception as e:
         print(f"Error in extract_text: {str(e)}")

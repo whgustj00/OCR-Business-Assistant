@@ -142,7 +142,7 @@ def extract_text_with_layout(ocr_result):
             if previous_x_end is not None :
                 x_diff = current_x_start - previous_x_end
                 # x 차이가 클 경우 탭 추가
-                if x_diff > 70:
+                if x_diff > 50:
                     extracted_text.append('\t')  # 탭 추가
 
             # 텍스트 추가 (lineBreak가 True일 경우 공백 추가하지 않음)
@@ -203,9 +203,23 @@ def perform_clova_ocr(image_file, api_url, secret_key):
 
             print(f"OCR 결과가 {output_json_path}에 저장되었습니다.")
 
+            # inferConfidence 값 합산 및 정확도 계산
+            total_confidence = 0
+            num_items = 0
+            for item in ocr_result.get("images", [])[0].get("fields", []):
+                confidence = item.get("inferConfidence", 0)
+                if confidence:
+                    total_confidence += confidence
+                    num_items += 1
+
+            if num_items > 0:
+                average_confidence = total_confidence / num_items
+            else:
+                average_confidence = 0  # 값이 없으면 0으로 설정
+
             # OCR 결과를 기반으로 텍스트 추출
             formatted_text = extract_text_with_layout(ocr_result)  # 개행 및 공백 조절
-            return formatted_text  # 추출한 텍스트 반환
+            return formatted_text, average_confidence # 추출한 텍스트 반환
         else:
             print(f"API 요청 실패: {response.status_code}, {response.text}")
             return "OCR 실패: API 요청 오류 발생"
@@ -313,14 +327,15 @@ def parse_formatted_data(formatted_data_str):
             
     return formatted_data
 
-def save_db_upload(filename, ocr_text, image_id):
+def save_db_upload(filename, ocr_text, image_id, confidence):
     """업로드 정보를 upload 컬렉션에 저장하는 함수"""
     try:
         upload_result = db['upload'].insert_one({
             "filename": filename,
             "ocr_text": ocr_text,
             "upload_date": datetime.now(),
-            "image_id": image_id
+            "image_id": image_id,
+            "confidence": confidence,
         })
         return str(upload_result.inserted_id)  # 데이터 ID 반환
     except Exception as e:
