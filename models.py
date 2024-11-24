@@ -227,10 +227,10 @@ def summarize_text(text):
             "messages": [
                 {
                     "role": "user",
-                    "content": f"다음 텍스트의 중요 내용을 300토큰 안에 요약해줘:\n\n{text}"
+                    "content": f"다음 텍스트의 중요 내용들만 3~4줄 분량의 개조식으로 요약해줘:\n{text}"
                 }
             ],
-            "max_tokens": 300
+            "max_tokens": 250
         }
 
         # GPT-4o mini API로 요약 요청
