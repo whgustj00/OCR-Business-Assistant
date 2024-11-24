@@ -1,7 +1,51 @@
+/* FileUpload.css */
+
 .file-upload-container {
-  margin: 20px auto;
-  max-width: 90%;
   display: flex;
-  flex-direction: column;
+  justify-content: center;
   align-items: center;
+  width: 100%;
+  height: 100%;
+  margin-top: 20px;
+}
+
+.file-upload-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between; /* 버튼과 파일명 사이에 공간을 둡니다 */
+  margin-bottom: 7px;
+}
+
+.file-upload-container input[type="file"] {
+  display: none; /* 기본 input은 숨깁니다 */
+}
+
+.file-upload-label {
+  display: inline-block;
+  padding: 5px 20px;
+  background-color: #007bff;
+  color: white;
+  font-size: 16px;
+  font-weight: bold;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  margin-right: 10px; /* 버튼과 파일명 사이에 간격 추가 */
+}
+
+.file-upload-label:hover {
+  background-color: #0056b3;
+}
+
+.file-upload-label:active {
+  background-color: #0056b3;
+}
+
+.file-name {
+  font-size: 14px;
+  color: #333;
+  font-weight: normal;
+  word-wrap: break-word;
+  margin-left: 10px; /* 파일명과 버튼 사이에 간격 추가 */
 }

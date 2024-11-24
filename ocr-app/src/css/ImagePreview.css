@@ -1,3 +1,4 @@
+/* 파일 미리보기 컨테이너 */
 .file-preview {
   flex: 1; /* 같은 너비를 갖도록 설정 */
   position: relative; /* 화살표 버튼을 위한 상대 위치 지정 */
@@ -7,14 +8,18 @@
   padding: 10px; /* 내부 여백 추가 */
   min-width: 0; /* 최소 너비를 0으로 설정하여 균형 유지 */
   overflow: hidden; /* 넘치는 내용 숨기기 */
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
+/* 이미지를 잡을 때 커서 모양을 grab으로 설정 */
 .preview-image {
-  max-width: 100%; /* 부모 요소에 맞게 최대 너비 조정 */
-  max-height: 100%; /* 최대 높이를 설정하여 크기 제한 */
-  width: auto;
+  width: 100%;
   height: auto;
 }
+
+/* 화살표 버튼들을 위한 컨테이너 */
 .arrow-container {
   position: absolute; /* 화살표를 미리보기 안에 배치 */
   top: 50%;
@@ -24,6 +29,8 @@
   justify-content: space-between; /* 화살표 사이 공간 균등 분배 */
   width: 95%;
 }
+
+/* 화살표 버튼 */
 .arrow-button {
   background: rgba(133, 133, 133, 0.1);
   border: none;
@@ -33,26 +40,83 @@
   border-radius: 5px;
   transition: background 0.3s;
 }
+
+/* 왼쪽 화살표 버튼 */
 .left-arrow {
   margin-right: auto; /* 왼쪽 버튼을 왼쪽 끝으로 */
 }
 
+/* 오른쪽 화살표 버튼 */
 .right-arrow {
   margin-left: auto; /* 오른쪽 버튼을 오른쪽 끝으로 */
 }
 
+/* 화살표 버튼에 마우스를 올렸을 때 */
 .arrow-button:hover {
   background: rgba(133, 133, 133, 0.3);
 }
 
+/* 줌 컨트롤 버튼들의 컨테이너 */
 .zoom-controls {
-  position: absolute; /* 절대 위치 설정 */
-  top: 10px; /* 상단 여백 */
-  left: 10px; /* 좌측 여백 */
-  z-index: 10; /* 다른 요소 위에 표시되도록 설정 */
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
+/* 줌 컨트롤 버튼 스타일 */
 .zoom-controls button {
-  font-size: 20px; /* 버튼 크기 */
-  margin: 0 5px; /* 버튼 간격 */
+  background-color: rgba(0, 0, 0, 0.5); /* 반투명 검정색 배경 */
+  color: white; /* 텍스트 색상 */
+  border: none; /* 기본 테두리 제거 */
+  padding: 5px; /* 동일한 패딩 설정 */
+  margin: 3px 0; /* 버튼 간 간격 설정 */
+  border-radius: 5px; /* 둥근 모서리 */
+  font-size: 16px; /* 폰트 크기 동일하게 설정 */
+  cursor: pointer; /* 클릭 가능하다는 커서 표시 */
+  opacity: 0.7; /* 초기 투명도 */
+  transition: opacity 0.3s ease, transform 0.2s ease; /* 부드러운 전환 효과 */
+}
+
+/* 줌 컨트롤 버튼에 마우스를 올렸을 때 효과 */
+.zoom-controls button:hover {
+  opacity: 1; /* 마우스 오버 시 불투명 */
+  transform: scale(1.1); /* 버튼이 살짝 커짐 */
+}
+
+/* 리셋 버튼 스타일 */
+.reset-button {
+  font-size: 16px; /* 리셋 아이콘 크기 */
+  padding: 5px; /* 패딩 동일하게 설정 */
+  background-color: rgba(0, 0, 0, 0.5); /* 반투명 배경 */
+  color: white; /* 아이콘 색상 */
+  border: none; /* 기본 테두리 제거 */
+  border-radius: 50%; /* 둥근 버튼 */
+  cursor: pointer; /* 클릭 가능한 커서 */
+  opacity: 0.7; /* 투명도 */
+  transition: opacity 0.3s ease, transform 0.2s ease; /* 부드러운 전환 효과 */
+}
+
+/* 리셋 버튼에 마우스를 올렸을 때 효과 */
+.reset-button:hover {
+  opacity: 1; /* 마우스 오버 시 불투명 */
+  transform: scale(1.1); /* 버튼이 살짝 커짐 */
+}
+
+/* 페이지 정보 스타일 */
+.page-info {
+  position: absolute;
+  bottom: 10px; /* 하단에 배치 */
+  left: 50%; /* 수평 중앙 정렬 */
+  transform: translateX(-50%); /* 정확히 중앙으로 정렬 */
+  font-size: 16px; /* 글자 크기 */
+  color: #333; /* 글자 색상 */
+  z-index: 2; /* 다른 요소들 위에 배치 */
+  margin: 0; /* 기본 여백 제거 */
+  background-color: rgba(255, 255, 255, 0.7); /* 배경색 추가로 가독성 높임 */
+  padding: 5px; /* 여백 추가 */
+  border-radius: 5px; /* 모서리 둥글게 처리 */
 }

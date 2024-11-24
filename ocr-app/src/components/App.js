@@ -257,7 +257,6 @@ function App() {
             </div>
           </div>
         </div>
-
         <FileUpload onFileUpload={handleFileUpload} />
         <input
           type="text"
@@ -276,6 +275,7 @@ function App() {
         </button>
         {htmlOutput && (
           <button
+            className="button"
             onClick={handleSummarizeAndFormat}
             disabled={isSummaryProcessing}
           >

@@ -35,7 +35,7 @@ def extract_text_route():
                         # 이미지 전처리 후 OCR 수행
                         img = preprocess_image(img)
                         ocr_text += f"=== 페이지 {page_number + 1} ===\n\n"  # 페이지 번호 추가
-                        ocr_text = perform_clova_ocr(img, api_url, secret_key) + "\n\n\n"  # OCR 수행 후 결과 구분
+                        ocr_text += perform_clova_ocr(img, api_url, secret_key) + "\n\n\n"  # OCR 수행 후 결과 구분
             else:
                 # 모든 페이지 처리
                 for i, img in enumerate(images):
@@ -44,7 +44,7 @@ def extract_text_route():
                     # 이미지 전처리 후 OCR 수행
                     img = preprocess_image(img)
                     ocr_text += f"=== 페이지 {i + 1} ===\n\n"  # 페이지 번호 추가
-                    ocr_text = perform_clova_ocr(img, api_url, secret_key) + "\n\n\n"  # OCR 수행 후 결과 구분
+                    ocr_text += perform_clova_ocr(img, api_url, secret_key) + "\n\n\n"  # OCR 수행 후 결과 구분
         else:
             # JPG, PNG 등 이미지 파일 처리
             img = Image.open(file)
