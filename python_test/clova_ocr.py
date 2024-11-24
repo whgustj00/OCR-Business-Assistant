@@ -39,31 +39,14 @@ def perform_ocr(image_file, api_url, secret_key):
 
         # 응답 처리
         if response.status_code == 200:
-            ocr_result = response.json()
-            extracted_text = []
-            previous_y = None
+            ocr_result = json.loads(response.text)
+            text_results = " ".join([field['inferText'] for image in ocr_result['images'] for field in image['fields']])
             
-            for image in ocr_result.get('images', []):
-                for field in image.get('fields', []):
-                    current_y = field['boundingPoly']['vertices'][0]['y']
-                    text = field.get('inferText', '') + ' '
-
-                    # y값이 같으면 같은 줄에 추가, 다르면 줄바꿈
-                    if previous_y is None or abs(previous_y - current_y) > 3:  # 5px 이상 차이가 나면 줄바꿈
-                        extracted_text.append('\n' + text)
-                    elif previous_y is None or abs(previous_y - current_y) > 6:  # 5px 이상 차이가 나면 한번 더 줄바꿈
-                        extracted_text.append('\n\n' + text)
-                    else:
-                        extracted_text.append(text)
-
-                    previous_y = current_y
-            
-            return ''.join(extracted_text).strip()  # 추출한 텍스트 반환
+            return text_results  # 추출한 텍스트 반환
         else:
             print(f"API 요청 실패: {response.status_code}, {response.text}")
             return "OCR 실패: API 요청 오류 발생"
         
-
     except Exception as e:
         print(f"OCR 처리 중 오류 발생: {str(e)}")
         return "OCR 실패: 오류 발생"
