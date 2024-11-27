@@ -27,7 +27,3 @@ npm install
 
 시연 영상 : https://youtu.be/uSEFluc8Lok
 
-시연 영상
-
-
-![시연-영상-4](https://github.com/user-attachments/assets/39c24809-10d6-4f84-bef7-94db51af2ae0)
