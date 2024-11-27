@@ -24,3 +24,5 @@ npm install
 
 프론트엔드 구동 npm start<br/>
 새 터미널 열고 백엔드 구동 flask run
+
+![시연-영상-4](https://github.com/user-attachments/assets/39c24809-10d6-4f84-bef7-94db51af2ae0)
