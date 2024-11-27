@@ -195,7 +195,7 @@ function App() {
   return (
     <div>
       <nav className="navbar">
-        <h1 className="navbar-title">OCR 비즈니스 어시스턴트</h1>
+        <h1 className="navbar-title">OCR Business Assistant</h1>
       </nav>
       <div className="App">
         <div className="search-wrapper">
