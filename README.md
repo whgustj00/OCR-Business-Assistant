@@ -27,3 +27,4 @@ npm install
 
 시연 영상 : https://youtu.be/uSEFluc8Lok
 
+<iframe width="1280" height="720" src="https://www.youtube.com/embed/uSEFluc8Lok" title="OCR Business Assistant 데모 영상" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
