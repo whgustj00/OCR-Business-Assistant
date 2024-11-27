@@ -245,7 +245,7 @@ function App() {
               <input
                 className="input"
                 type="text"
-                placeholder="RAG 검색어 입력"
+                placeholder="원하는 정보 검색"
                 value={ragSearchTerm}
                 onChange={(e) => setRagSearchTerm(e.target.value)}
                 onKeyDown={(e) => {

@@ -73,7 +73,7 @@ pre {
 }
 .search-container {
   background-color: #fff; /* 배경색 */
-  padding: 20px; /* 내부 여백 */
+  padding: 15px; /* 내부 여백 */
   border: 1px solid #ccc; /* 테두리 */
   border-radius: 8px; /* 둥근 모서리 */
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); /* 그림자 */
@@ -83,8 +83,8 @@ pre {
   display: flex; /* 두 검색 영역을 좌우로 배치 */
   justify-content: space-between; /* 양쪽 끝으로 배치 */
   max-width: 70%; /* 최대 너비 설정 */
-  margin: 20px auto; /* 상단 여백과 중앙 정렬 */
-  padding: 20px; /* 내부 여백 추가 */
+  margin: 10px auto; /* 상단 여백과 중앙 정렬 */
+  padding: 10px; /* 내부 여백 추가 */
   flex-wrap: wrap; /* 화면 크기 축소 시 다음 줄로 내려가도록 설정 */
 }
 

@@ -19,6 +19,7 @@ const ImagePreview = ({ imageUrls, currentPage, setCurrentPage }) => {
 
   return (
     <div className="file-preview">
+      <h2>이미지 미리보기</h2>
       {imageUrls.length > 0 && (
         <>
           <TransformWrapper

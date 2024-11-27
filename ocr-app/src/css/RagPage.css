@@ -15,23 +15,24 @@ h2 {
 }
 
 .search-results {
-  margin-top: 15px;
+  margin-top: 10px;
 }
 
 .result-answer {
   background-color: #fff;
-  padding: 12px; /* 패딩을 줄여서 더 작게 만듦 */
+  padding: 15px; /* 패딩을 줄여서 더 작게 만듦 */
   border-radius: 8px;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  font-size: 0.95rem; /* 폰트 크기를 조금 줄임 */
+  width: 100%;
 }
 
 .document-card {
   background-color: #fff;
   padding: 15px; /* 패딩을 줄여서 더 작게 만듦 */
   border-radius: 8px;
-  margin-top: 15px; /* 마진을 줄여서 간격을 조정 */
+  margin-top: 5px; /* 마진을 줄여서 간격을 조정 */
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  width: 100%;
 }
 
 .document-details p {
@@ -40,10 +41,11 @@ h2 {
 }
 
 .document-content {
-  padding: 8px; /* 패딩을 줄여서 더 작게 만듦 */
+  padding: 10px; /* 패딩을 줄여서 더 작게 만듦 */
+  margin-top: 5px;
   background-color: #f4f4f4;
   border-radius: 5px;
-  white-space: pre-wrap; /* Ensure the text preserves line breaks */
+  white-space: pre-wrap;
   font-size: 0.95rem; /* 폰트 크기 줄이기 */
 }
 

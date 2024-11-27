@@ -84,7 +84,7 @@ function RagPage() {
 
   return (
     <div className="rag-page">
-      <h2>검색 결과 : {query}</h2>
+      <h2>검색어 : {query}</h2>
       {errorMessage && <div className="error-message">{errorMessage}</div>}
 
       <div className="search-results">
