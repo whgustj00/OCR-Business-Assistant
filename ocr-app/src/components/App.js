@@ -91,7 +91,7 @@ function App() {
         setHtmlOutput(data.html); // HTML 레이아웃으로 저장
         setFileName(file.name); // 파일 이름 저장
         setUploadId(data.upload_id); // 백엔드에서 받은 upload_id 저장
-        setConfidence(data.confidence); // OCR 단어 유사도 저장
+        setConfidence(data.confidence); // OCR 단어 신뢰도 저장
       } else {
         alert(`텍스트 추출 중 오류가 발생했습니다: ${data.error}`);
       }

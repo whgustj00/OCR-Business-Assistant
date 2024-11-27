@@ -59,10 +59,10 @@ def extract_text_route():
             ocr_text = formatted_text
             confidences.append(confidence)  # Confidence 값 저장
 
-        print(f"최종 유사도 리스트 : {confidences}")
+        print(f"최종 신뢰도 리스트 : {confidences}")
         # 전체 평균 정확도 계산
         overall_confidence = sum(confidences) / len(confidences) if confidences else 0
-        print(f"평균 유사도 : + {overall_confidence}")
+        print(f"평균 신뢰도 : + {overall_confidence}")
 
         # 업로드 정보를 DB에 저장
         upload_id = save_db_upload(file.filename, ocr_text, image_id, overall_confidence)

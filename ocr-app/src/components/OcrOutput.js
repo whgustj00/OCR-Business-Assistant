@@ -28,7 +28,7 @@ const OcrOutput = ({
           {confidence !== 0 &&
             confidence !== undefined &&
             confidence !== null && ( // confidence가 0이 아니고 유효한 값일 때만 출력
-              <p>유사도: {confidence.toFixed(3)}%</p>
+              <p>신뢰도: {confidence.toFixed(3)}%</p>
             )}
           {htmlOutput && (
             <textarea
