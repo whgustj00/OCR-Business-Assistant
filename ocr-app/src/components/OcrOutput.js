@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom"; // useNavigate 추가
 import "../css/OcrOutput.css";
+import "../css/App.css";
 
 const OcrOutput = ({
   isOcrProcessing,
@@ -25,22 +26,27 @@ const OcrOutput = ({
         <p>처리 중...</p>
       ) : (
         <>
-          {confidence !== 0 &&
-            confidence !== undefined &&
-            confidence !== null && ( // confidence가 0이 아니고 유효한 값일 때만 출력
-              <p>신뢰도: {confidence.toFixed(3)}%</p>
-            )}
           {htmlOutput && (
-            <textarea
-              value={htmlOutput}
-              onChange={(e) => setHtmlOutput(e.target.value)}
-              className="output-textarea"
-            />
+            <>
+              <div className="ocr-header">
+                <textarea
+                  value={htmlOutput}
+                  onChange={(e) => setHtmlOutput(e.target.value)}
+                  className="output-textarea"
+                />
+                {confidence !== 0 &&
+                  confidence !== undefined &&
+                  confidence !== null && ( // 신뢰도가 0이 아니고 유효한 값일 때만 출력
+                    <p className="confidence-display">
+                      신뢰도: {confidence.toFixed(3) * 100}%
+                    </p>
+                  )}
+              </div>
+            </>
           )}
 
           {htmlOutput && (
             <>
-              <h2>요약 및 정형화 결과</h2>
               {isSummaryProcessing ? (
                 <p>처리 중...</p>
               ) : (
@@ -50,7 +56,9 @@ const OcrOutput = ({
                 />
               )}
               {!isSummaryProcessing && summaryHtml && (
-                <button onClick={handleAccuracyComparison}>정확도 비교</button>
+                <button className="button" onClick={handleAccuracyComparison}>
+                  정확도 비교
+                </button>
               )}
             </>
           )}

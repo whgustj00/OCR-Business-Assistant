@@ -33,9 +33,9 @@ def summarize_and_format_route():
 
             response_html = f"""
             <div>
-                <h2>요약 결과</h2>
+                <h3>요약 결과</h3>
                 <pre>{summary}</pre>
-                <h2>정형화된 데이터</h2>
+                <h3>정형화된 데이터</h3>
                 <pre>{formatted_data_str}</pre>
             </div>
             """

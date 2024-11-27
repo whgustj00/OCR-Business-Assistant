@@ -20,6 +20,7 @@
   display: flex;
   justify-content: space-between; /* 자식 요소들 간의 간격을 균등하게 배치 */
   width: 95%; /* 부모 요소의 너비 95% */
+  max-height: 900px;
   margin: 1% auto; /* 상하 여백을 1%로 설정하고 중앙 정렬 */
   padding: 0 10px; /* 좌우 여백을 추가하여 내용이 너무 끝에 붙지 않도록 설정 */
 }
@@ -28,13 +29,17 @@ input[type="file"] {
   padding: 10px;
 }
 
+h3 {
+  margin-bottom: -5px;
+  text-align: center;
+}
+
 pre {
   background-color: #f8f8f8;
   padding: 10px;
   border-radius: 5px;
   white-space: pre-wrap;
   overflow-x: auto;
-  max-height: 400px;
 }
 
 .input {

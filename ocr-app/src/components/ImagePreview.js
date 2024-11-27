@@ -24,7 +24,7 @@ const ImagePreview = ({ imageUrls, currentPage, setCurrentPage }) => {
         <>
           <TransformWrapper
             initialScale={1}
-            minScale={0.75} // 최소 확대 비율
+            minScale={0.5} // 최소 확대 비율
             maxScale={2} // 최대 확대 비율
             wheel={{ step: 0.05 }} // 휠로 확대/축소
           >
