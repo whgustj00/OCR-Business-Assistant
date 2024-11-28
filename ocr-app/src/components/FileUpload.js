@@ -16,7 +16,7 @@ const FileUpload = ({ onFileUpload }) => {
     <div className="file-upload-container">
       <div className="file-upload-wrapper">
         <label htmlFor="file-upload" className="file-upload-label">
-          파일 선택
+          파일 업로드
         </label>
         <input
           type="file"
