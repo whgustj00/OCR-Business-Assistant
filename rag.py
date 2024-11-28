@@ -7,8 +7,12 @@ from models import data_collection, api_key
 from langchain.schema import Document
 from datetime import datetime
 from flask import Blueprint, request, jsonify
+import os
 
 rag = Blueprint('rag', __name__)
+
+# Chroma 데이터 저장 디렉토리 설정
+CHROMA_DIR = "/chroma_data"
 
 # 데이터 로딩 함수
 def load_from_data_collection():
@@ -25,16 +29,26 @@ def load_from_data_collection():
         documents.append(Document(page_content=page_content, metadata=metadata))
     return documents
 
-# Chroma 벡터 저장소 생성 함수
-def create_chroma_index_from_data_collection():
-    documents = load_from_data_collection()
-    embeddings_model = OpenAIEmbeddings(openai_api_key=api_key)
-    chroma_db = Chroma.from_documents(documents, embeddings_model)
+# Chroma 벡터 저장소 생성 또는 로드 함수
+def get_or_create_chroma_index():
+    # Chroma 데이터 디렉토리가 존재하고 비어 있지 않으면 로드
+    if os.path.exists(CHROMA_DIR) and os.listdir(CHROMA_DIR):
+        embeddings_model = OpenAIEmbeddings(openai_api_key=api_key)
+        chroma_db = Chroma(persist_directory=CHROMA_DIR, embedding_function=embeddings_model)
+    else:
+        # 없을 경우 새로 생성 및 저장
+        documents = load_from_data_collection()
+        if not documents:
+            raise ValueError("No documents found in the data collection to index.")
+        
+        embeddings_model = OpenAIEmbeddings(openai_api_key=api_key)
+        chroma_db = Chroma.from_documents(documents, embeddings_model, persist_directory=CHROMA_DIR)
+        chroma_db.persist()  # 데이터를 디스크에 저장
     return chroma_db
 
 # 쿼리 처리 및 검색 함수
 def query_data_collection(query):
-    chroma_db = create_chroma_index_from_data_collection()
+    chroma_db = get_or_create_chroma_index()
 
     openai = ChatOpenAI(
         model_name="gpt-4o-mini",
@@ -64,24 +78,31 @@ def rag_route():
 
     try:
         result = query_data_collection(query)
-        
-        # 문서 내용과 메타데이터가 반환될 수 있도록 변환
-        formatted_results = []
-        for doc in result['source_documents']:
-            formatted_results.append({
-                "filename": doc.metadata.get("filename", "Unknown filename"),  # filename 필드 추가
-                "upload_date": doc.metadata.get("upload_date", "Unknown date"),  # upload_date 필드 추가
-                "page_content": doc.page_content,
-                "metadata": doc.metadata
-            })
-
-        # 결과 출력
-        print("Formatted Results:", formatted_results)
-        print("Answer:", result.get('result', 'No result found'))
-
-        return jsonify({
-            "results": result.get('result', 'No result found'),  # 'result'가 없을 경우 기본값 설정
-            "sources": formatted_results
-        })
-    except Exception as e:
+    except ValueError as e:
         return jsonify({"error": str(e)}), 500
+
+    # 'result'와 'source_documents'가 모두 유효한 경우에만 처리
+    answer = result.get('result')
+    source_documents = result.get('source_documents')
+
+    if not answer or not source_documents or not isinstance(source_documents, list) or len(source_documents) == 0:
+        return jsonify({"error": "Incomplete response generated. Please try again."}), 500
+
+    # 문서 내용과 메타데이터가 반환될 수 있도록 변환
+    formatted_results = []
+    for doc in source_documents:
+        formatted_results.append({
+            "filename": doc.metadata.get("filename", "Unknown filename"),
+            "upload_date": doc.metadata.get("upload_date", "Unknown date"),
+            "page_content": doc.page_content,
+            "metadata": doc.metadata,
+        })
+
+    # 결과 출력
+    print("Formatted Results:", formatted_results)
+    print("Answer:", answer)
+
+    return jsonify({
+        "results": answer,  # 'result'는 항상 유효함
+        "sources": formatted_results,  # 'sources'도 항상 유효함
+    })
